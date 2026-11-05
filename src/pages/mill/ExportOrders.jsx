@@ -39,7 +39,7 @@ export default function ExportOrders() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Export Orders</h1>
         <div className="flex gap-2">
           <button onClick={() => setShowCustomer(true)}
@@ -55,7 +55,8 @@ export default function ExportOrders() {
 
       {isLoading ? <p className="text-slate-400 text-center py-20">Loading...</p> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 {['Customer', 'Date', 'Rice Type', 'Ordered (Qtl)', 'Shipped (Qtl)', 'Remaining (Qtl)', 'Status', 'Actions'].map(h => (
@@ -84,7 +85,8 @@ export default function ExportOrders() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 
@@ -99,7 +101,7 @@ export default function ExportOrders() {
                 {customers.map(c => <option key={c.id} value={c.id}>{c.name} {c.companyName ? `(${c.companyName})` : ''}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Order Date *</label>
                 <input type="date" value={orderForm.orderDate} required onChange={e => setOrderForm(f => ({ ...f, orderDate: e.target.value }))}
@@ -111,7 +113,7 @@ export default function ExportOrders() {
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Quantity (Qtl) *</label>
                 <input type="number" step="0.01" value={orderForm.quantityQuintals} required onChange={e => setOrderForm(f => ({ ...f, quantityQuintals: e.target.value }))}
@@ -171,7 +173,7 @@ export default function ExportOrders() {
             </div>
           )}
           <form onSubmit={(e) => { e.preventDefault(); shipMutation.mutate({ ...shipForm, orderId: shipModal.id, quintalsExported: parseFloat(shipForm.quintalsExported) }) }} className="space-y-3 border-t border-slate-200 pt-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">Quintals to Ship *</label>
                 <input type="number" step="0.01" value={shipForm.quintalsExported} required onChange={e => setShipForm(f => ({ ...f, quintalsExported: e.target.value }))}

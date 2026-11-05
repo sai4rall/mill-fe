@@ -74,7 +74,7 @@ export default function PaymentPanel({ purchase, farmerVerified }) {
     <form noValidate onSubmit={(e) => { e.preventDefault(); if (otpActive) pay.mutate(); else requestOtp() }}
       className="space-y-3 border-t border-slate-200 pt-4">
       <h3 className="font-medium text-slate-700 text-sm">Release Payment</h3>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label htmlFor="pay-amount" className="block text-xs font-medium text-slate-600 mb-1">Amount ₹ *</label>
           <input id="pay-amount" inputMode="decimal" value={form.amount} onChange={e => setField('amount', e.target.value.trim())} className={input} />
@@ -84,7 +84,7 @@ export default function PaymentPanel({ purchase, farmerVerified }) {
           <input id="pay-date" type="date" value={form.paymentDate} onChange={e => setField('paymentDate', e.target.value)} className={input} />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label htmlFor="pay-mode" className="block text-xs font-medium text-slate-600 mb-1">Mode</label>
           <select id="pay-mode" value={form.paymentMode} onChange={e => setField('paymentMode', e.target.value)} className={input}>

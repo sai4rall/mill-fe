@@ -174,7 +174,7 @@ export default function MillStockStatement() {
   return (
     <div>
       {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/admin')}
             className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors text-sm font-medium">
@@ -262,7 +262,8 @@ export default function MillStockStatement() {
                   <h2 className="font-semibold text-slate-800">Stock Ledger</h2>
                   <span className="text-xs text-slate-400">Auto-refreshes every 30 s</span>
                 </div>
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Line Item</th>
@@ -287,7 +288,8 @@ export default function MillStockStatement() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
             </>
           )

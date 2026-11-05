@@ -76,7 +76,7 @@ export default function TruckTracking() {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Truck</label>
           <select value={activeTruck} onChange={e => setSelectedTruck(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400 min-w-[180px]">
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400 w-full sm:w-auto sm:min-w-[180px]">
             {truckNumbers.length === 0 && <option value="">No trucks yet</option>}
             {truckNumbers.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -136,11 +136,11 @@ export default function TruckTracking() {
       )}
 
       {/* Map */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden" style={{ height: '540px' }}>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-[60vh] min-h-[320px] md:h-[540px]">
         {trucksLoading ? (
           <div className="h-full flex items-center justify-center text-slate-400">Loading trucks...</div>
         ) : truckNumbers.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+          <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 gap-2 px-6">
             <Truck className="w-10 h-10 text-slate-300" />
             <p>No GPS data yet.</p>
             <p className="text-xs">Trucks appear here once their GPS devices start reporting locations.</p>

@@ -56,7 +56,8 @@ export default function SuperAdminsPanel() {
 
       {isLoading ? <p className="text-slate-400 text-center py-10">Loading...</p> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>{['Username', 'Full name', 'Status', 'Actions'].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">{h}</th>
@@ -89,7 +90,8 @@ export default function SuperAdminsPanel() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 

@@ -10,3 +10,8 @@ body {
   background-color: #f8fafc;
   color: #1e293b;
 }
+
+/* Table headers stay on one line; narrow screens scroll the table sideways instead. */
+th {
+  white-space: nowrap;
+}

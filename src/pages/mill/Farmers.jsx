@@ -184,7 +184,7 @@ export default function Farmers() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Farmers</h1>
         <button onClick={openCreate}
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm">
@@ -200,7 +200,8 @@ export default function Farmers() {
               <p className="text-slate-400">No farmers added yet</p>
             </div>
           ) : (
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   {['Name', 'Mobile', 'Bank Account', 'Bank Name', 'Actions'].map(h => (
@@ -243,7 +244,8 @@ export default function Farmers() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, within, waitFor } from '@testing-library/react'
+import { screen, within, waitFor, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Layout from './Layout'
 import { getFeatures } from '../api/features'
 import { renderWithProviders } from '../test/renderWithProviders'
@@ -114,5 +115,50 @@ describe('Layout menu feature flags', () => {
     expect(menuLabels(nav)).toEqual(['Dev Console'])
     expect(screen.getByText('DEV ADMIN')).toBeInTheDocument()
     expect(getFeatures).not.toHaveBeenCalled()
+  })
+})
+
+describe('Layout on small screens (sidebar drawer)', () => {
+  const sidebar = () => document.getElementById('app-sidebar')
+  const isOpen = () => sidebar().className.includes('translate-x-0') && !sidebar().className.includes('-translate-x-full')
+  beforeEach(() => getFeatures.mockResolvedValue(flags()))
+
+  it('starts closed and opens with the menu button', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<Layout><p>page</p></Layout>)
+    await menu()
+    const toggle = screen.getByRole('button', { name: 'Open menu' })
+    expect(isOpen()).toBe(false)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(toggle)
+    expect(isOpen()).toBe(true)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('closes with the close button, the backdrop and Escape', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<Layout><p>page</p></Layout>)
+    await menu()
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    await user.click(screen.getByRole('button', { name: 'Close menu' }))
+    expect(isOpen()).toBe(false)
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    fireEvent.click(document.querySelector('[aria-hidden="true"].fixed'))
+    expect(isOpen()).toBe(false)
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    await user.keyboard('{Escape}')
+    expect(isOpen()).toBe(false)
+  })
+
+  it('closes after navigating to another page', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<Layout><p>page</p></Layout>, { route: '/dashboard' })
+    const nav = await menu()
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    await user.click(within(nav).getByRole('link', { name: /Farmers/ }))
+    expect(isOpen()).toBe(false)
   })
 })

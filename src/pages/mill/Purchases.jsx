@@ -46,7 +46,7 @@ export default function Purchases() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Paddy Purchases</h1>
         <button onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors">
@@ -56,7 +56,8 @@ export default function Purchases() {
 
       {isLoading ? <p className="text-slate-400 text-center py-20">Loading...</p> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 {['Farmer', 'Date', 'Truck No.', 'Weight (Qtl)', 'Rate/Qtl', ...(moistureOn ? ['Moisture'] : []), 'Total', 'Paid', 'Due', 'Status', 'Actions'].map(h => (
@@ -90,7 +91,8 @@ export default function Purchases() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 
@@ -114,7 +116,7 @@ export default function Purchases() {
               <input id="purchase-date" type="date" value={form.purchaseDate} required onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="purchase-weight" className="block text-sm font-medium text-slate-700 mb-1">Weight (Quintals) *</label>
                 <input id="purchase-weight" type="number" min="0.01" step="0.01" value={form.weightQuintals} required onChange={e => setForm(f => ({ ...f, weightQuintals: e.target.value }))}

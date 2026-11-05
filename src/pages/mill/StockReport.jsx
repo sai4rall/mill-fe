@@ -35,7 +35,8 @@ export default function StockReport() {
             <div className="px-6 py-4 border-b border-slate-200">
               <h2 className="font-semibold text-slate-800">Stock Ledger</h2>
             </div>
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Line Item</th>
@@ -52,7 +53,8 @@ export default function StockReport() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </>
       )}

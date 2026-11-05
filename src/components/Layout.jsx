@@ -1,9 +1,10 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFeatures } from '../features/useFeatures'
 import {
   LayoutDashboard, Users, ShoppingCart, Factory,
-  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets
+  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets, Menu, X
 } from 'lucide-react'
 import MillBrand from './MillBrand'
 
@@ -42,12 +43,34 @@ export default function Layout({ children }) {
     .filter(n => !n.feature || flag(n.feature).showInMenu)
 
   const handleLogout = () => { logout(); navigate('/login') }
+  const isMillUser = !!user && !isSuperAdmin && !isDevAdmin
+
+  // Mobile: the sidebar is an off-canvas drawer. Desktop (md and up): always visible, as before.
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { pathname } = useLocation()
+  useEffect(() => { setMenuOpen(false) }, [pathname]) // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm">
-        <div className="px-6 py-5 border-b border-slate-200">
-          <MillBrand isMillUser={!!user && !isSuperAdmin && !isDevAdmin} />
+    <div className="flex h-dvh bg-slate-50">
+      {menuOpen && (
+        <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+      )}
+      <aside id="app-sidebar"
+        className={`fixed inset-y-0 left-0 z-40 w-64 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col shadow-sm
+          transform transition-transform duration-200 md:static md:translate-x-0 md:max-w-none
+          ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="px-6 py-5 border-b border-slate-200 relative">
+          <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu"
+            className="md:hidden absolute top-4 right-3 p-1.5 rounded-lg text-slate-500 hover:bg-slate-100">
+            <X className="w-5 h-5" />
+          </button>
+          <MillBrand isMillUser={isMillUser} />
           <p className="text-xs text-slate-500 mt-1 truncate">{user?.fullName || user?.username}</p>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
             isDevAdmin ? 'bg-amber-100 text-amber-800' :
@@ -84,7 +107,17 @@ export default function Layout({ children }) {
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="md:hidden sticky top-0 z-20 flex items-center gap-3 bg-white border-b border-slate-200 px-4 py-3">
+          <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu"
+            aria-controls="app-sidebar" aria-expanded={menuOpen}
+            className="p-1.5 -ml-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+            <Menu className="w-6 h-6" />
+          </button>
+          <MillBrand isMillUser={isMillUser} />
+        </header>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
     </div>
   )
 }

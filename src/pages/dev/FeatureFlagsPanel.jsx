@@ -67,7 +67,8 @@ export default function FeatureFlagsPanel() {
 
       {isLoading ? <p className="text-slate-400 text-center py-10">Loading...</p> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className={th}>Module</th>
@@ -115,7 +116,8 @@ export default function FeatureFlagsPanel() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
     </div>

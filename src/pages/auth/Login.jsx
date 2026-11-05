@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { homePathFor } from '../../utils/roles'
 import { Factory } from 'lucide-react'
 
 export default function Login() {
@@ -16,7 +17,7 @@ export default function Login() {
     setLoading(true)
     try {
       const data = await login(form.username, form.password)
-      navigate(data.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard')
+      navigate(homePathFor(data.role))
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Check your credentials.')
     } finally {

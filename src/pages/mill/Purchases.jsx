@@ -1,37 +1,48 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPurchases, createPurchase, getFarmers, getPayments, createPayment } from '../../api/mill'
+import { getPurchases, createPurchase, getFarmers, getPayments } from '../../api/mill'
+import { getMoistureTable } from '../../api/moisture'
 import Modal from '../../components/Modal'
 import StatusBadge from '../../components/StatusBadge'
-import { Plus, IndianRupee } from 'lucide-react'
+import PaymentPanel from './PaymentPanel'
+import { lookupDeduction, priceBreakdown } from '../../utils/moisture'
+import { useFeatures } from '../../features/useFeatures'
+import { Plus, IndianRupee, ShieldCheck } from 'lucide-react'
+
+const EMPTY_FORM = { farmerId: '', purchaseDate: '', weightQuintals: '', pricePerQuintal: '', moisturePct: '', truckNumber: '', notes: '' }
+const rupees = (v) => `₹${Number(v).toFixed(2)}`
 
 export default function Purchases() {
   const qc = useQueryClient()
   const [showCreate, setShowCreate] = useState(false)
-  const [paymentModal, setPaymentModal] = useState(null)
-  const [form, setForm] = useState({ farmerId: '', purchaseDate: '', weightQuintals: '', pricePerQuintal: '', truckNumber: '', notes: '' })
-  const [payForm, setPayForm] = useState({ amount: '', paymentDate: new Date().toISOString().slice(0, 10), paymentMode: 'CASH', referenceNumber: '', notes: '' })
+  const [paymentFor, setPaymentFor] = useState(null) // purchase id
+  const [form, setForm] = useState(EMPTY_FORM)
 
   const { data: purchases = [], isLoading } = useQuery({ queryKey: ['purchases'], queryFn: getPurchases })
   const { data: farmers = [] } = useQuery({ queryKey: ['farmers'], queryFn: getFarmers })
+  // Moisture % and its price deduction can be switched off per mill (feature flag "moisture_deduction").
+  const moistureOn = useFeatures().flag('moisture_deduction').enabled
+  const { data: moisture } = useQuery({ queryKey: ['moisture'], queryFn: getMoistureTable, enabled: moistureOn })
+  // Always read the purchase from the list so balances refresh after a payment.
+  const paymentModal = purchases.find(p => p.id === paymentFor) || null
   const { data: payments = [] } = useQuery({
-    queryKey: ['payments', paymentModal?.id],
-    queryFn: () => getPayments(paymentModal.id),
-    enabled: !!paymentModal,
+    queryKey: ['payments', paymentFor],
+    queryFn: () => getPayments(paymentFor),
+    enabled: !!paymentFor,
   })
 
   const createMutation = useMutation({
-    mutationFn: createPurchase,
-    onSuccess: () => { qc.invalidateQueries(['purchases']); qc.invalidateQueries(['stock']); setShowCreate(false) }
+    mutationFn: (data) => createPurchase(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['purchases'] }); qc.invalidateQueries({ queryKey: ['stock'] })
+      setShowCreate(false); setForm(EMPTY_FORM)
+    },
   })
 
-  const payMutation = useMutation({
-    mutationFn: createPayment,
-    onSuccess: () => { qc.invalidateQueries(['purchases']); qc.invalidateQueries(['payments', paymentModal?.id]) }
-  })
-
-  const total = form.weightQuintals && form.pricePerQuintal
-    ? (parseFloat(form.weightQuintals) * parseFloat(form.pricePerQuintal)).toFixed(2) : '0.00'
+  // Preview only — the server looks the deduction up again when saving.
+  const deductionPct = moistureOn ? lookupDeduction(moisture?.ranges, form.moisturePct) : 0
+  const { gross, deduction, net } = priceBreakdown(form.weightQuintals, form.pricePerQuintal, deductionPct)
+  const farmerVerified = (id) => farmers.find(f => f.id === id)?.phoneVerified
 
   return (
     <div>
@@ -48,7 +59,7 @@ export default function Purchases() {
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                {['Farmer', 'Date', 'Truck No.', 'Weight (Qtl)', 'Rate/Qtl', 'Total', 'Paid', 'Due', 'Status', 'Actions'].map(h => (
+                {['Farmer', 'Date', 'Truck No.', 'Weight (Qtl)', 'Rate/Qtl', ...(moistureOn ? ['Moisture'] : []), 'Total', 'Paid', 'Due', 'Status', 'Actions'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -61,12 +72,17 @@ export default function Purchases() {
                   <td className="px-4 py-3 text-slate-700 text-sm font-mono">{p.truckNumber || '—'}</td>
                   <td className="px-4 py-3 text-slate-700 text-sm font-mono">{p.weightQuintals}</td>
                   <td className="px-4 py-3 text-slate-700 text-sm font-mono">₹{p.pricePerQuintal}</td>
+                  {moistureOn && <td className="px-4 py-3 text-slate-700 text-sm font-mono">
+                    {p.moisturePct == null ? '—' : (
+                      <>{Number(p.moisturePct)}%{Number(p.deductionPct) > 0 && <span className="block text-xs text-amber-700">−{Number(p.deductionPct)}%</span>}</>
+                    )}
+                  </td>}
                   <td className="px-4 py-3 text-slate-800 text-sm font-semibold font-mono">₹{p.totalAmount}</td>
                   <td className="px-4 py-3 text-emerald-600 text-sm font-mono">₹{p.amountPaid}</td>
                   <td className="px-4 py-3 text-red-500 text-sm font-mono">₹{p.amountDue}</td>
                   <td className="px-4 py-3"><StatusBadge status={p.paymentStatus} /></td>
                   <td className="px-4 py-3">
-                    <button onClick={() => setPaymentModal(p)}
+                    <button onClick={() => setPaymentFor(p.id)} aria-label={`Pay ${p.farmerName}`}
                       className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1.5 rounded font-medium transition-colors">
                       <IndianRupee className="w-3 h-3" /> Pay
                     </button>
@@ -80,35 +96,58 @@ export default function Purchases() {
 
       {showCreate && (
         <Modal title="Record Paddy Purchase" onClose={() => setShowCreate(false)}>
-          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ ...form, farmerId: parseInt(form.farmerId), weightQuintals: parseFloat(form.weightQuintals), pricePerQuintal: parseFloat(form.pricePerQuintal) }) }} className="space-y-4">
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            createMutation.mutate({ ...form, farmerId: parseInt(form.farmerId), weightQuintals: parseFloat(form.weightQuintals),
+              pricePerQuintal: parseFloat(form.pricePerQuintal), moisturePct: moistureOn ? parseFloat(form.moisturePct) : null })
+          }} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Farmer *</label>
-              <select value={form.farmerId} required onChange={e => setForm(f => ({ ...f, farmerId: e.target.value }))}
+              <label htmlFor="purchase-farmer" className="block text-sm font-medium text-slate-700 mb-1">Farmer *</label>
+              <select id="purchase-farmer" value={form.farmerId} required onChange={e => setForm(f => ({ ...f, farmerId: e.target.value }))}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
                 <option value="">Select farmer...</option>
                 {farmers.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Purchase Date *</label>
-              <input type="date" value={form.purchaseDate} required onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))}
+              <label htmlFor="purchase-date" className="block text-sm font-medium text-slate-700 mb-1">Purchase Date *</label>
+              <input id="purchase-date" type="date" value={form.purchaseDate} required onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Weight (Quintals) *</label>
-                <input type="number" step="0.01" value={form.weightQuintals} required onChange={e => setForm(f => ({ ...f, weightQuintals: e.target.value }))}
+                <label htmlFor="purchase-weight" className="block text-sm font-medium text-slate-700 mb-1">Weight (Quintals) *</label>
+                <input id="purchase-weight" type="number" min="0.01" step="0.01" value={form.weightQuintals} required onChange={e => setForm(f => ({ ...f, weightQuintals: e.target.value }))}
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Price per Quintal ₹ *</label>
-                <input type="number" step="0.01" value={form.pricePerQuintal} required onChange={e => setForm(f => ({ ...f, pricePerQuintal: e.target.value }))}
+                <label htmlFor="purchase-price" className="block text-sm font-medium text-slate-700 mb-1">Price per Quintal ₹ *</label>
+                <input id="purchase-price" type="number" min="0.01" step="0.01" value={form.pricePerQuintal} required onChange={e => setForm(f => ({ ...f, pricePerQuintal: e.target.value }))}
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
               </div>
             </div>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-sm">
-              Total Amount: <strong className="text-emerald-700 font-mono">₹{total}</strong>
+            {moistureOn && <div>
+              <label htmlFor="purchase-moisture" className="block text-sm font-medium text-slate-700 mb-1">Moisture % *</label>
+              <input id="purchase-moisture" type="number" step="0.01" min="0" max="100" value={form.moisturePct} required
+                onChange={e => setForm(f => ({ ...f, moisturePct: e.target.value }))}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+            </div>}
+            {moistureOn ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-sm space-y-1" data-testid="price-breakdown">
+              <div className="flex justify-between"><span>Gross amount</span><span className="font-mono">{rupees(gross)}</span></div>
+              <div className="flex justify-between text-amber-800">
+                <span>Moisture deduction ({deductionPct}%)</span><span className="font-mono">−{rupees(deduction)}</span>
+              </div>
+              <div className="flex justify-between font-semibold border-t border-emerald-200 pt-1">
+                <span>Net payable</span><strong className="text-emerald-700 font-mono">{rupees(net)}</strong>
+              </div>
+              {moisture?.source === 'NONE' && <p className="text-xs text-slate-500">No moisture ranges are configured, so no deduction applies.</p>}
             </div>
+            ) : (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-sm" data-testid="price-breakdown">
+                Total Amount: <strong className="text-emerald-700 font-mono">{rupees(gross)}</strong>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Truck Number</label>
               <input value={form.truckNumber} onChange={e => setForm(f => ({ ...f, truckNumber: e.target.value.toUpperCase() }))}
@@ -121,6 +160,11 @@ export default function Purchases() {
               <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none" />
             </div>
+            {createMutation.isError && (
+              <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">
+                {createMutation.error?.response?.data?.error || createMutation.error?.message}
+              </p>
+            )}
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setShowCreate(false)}
                 className="flex-1 border border-slate-300 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
@@ -134,8 +178,12 @@ export default function Purchases() {
       )}
 
       {paymentModal && (
-        <Modal title={`Payments — ${paymentModal.farmerName}`} onClose={() => setPaymentModal(null)}>
+        <Modal title={`Payments — ${paymentModal.farmerName}`} onClose={() => setPaymentFor(null)}>
           <div className="mb-4 p-3 bg-slate-50 rounded-lg text-sm">
+            {paymentModal.deductionPct != null && Number(paymentModal.deductionPct) > 0 && (
+              <div className="flex justify-between text-amber-800"><span>Moisture {Number(paymentModal.moisturePct)}% deduction:</span>
+                <span className="font-mono">−{Number(paymentModal.deductionPct)}% (₹{paymentModal.deductionAmount})</span></div>
+            )}
             <div className="flex justify-between"><span className="text-slate-500">Total:</span><span className="font-mono font-semibold">₹{paymentModal.totalAmount}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Paid:</span><span className="font-mono text-emerald-600">₹{paymentModal.amountPaid}</span></div>
             <div className="flex justify-between"><span className="text-slate-500">Due:</span><span className="font-mono text-red-500">₹{paymentModal.amountDue}</span></div>
@@ -145,9 +193,10 @@ export default function Purchases() {
             <div className="mb-4 divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
               {payments.map(pay => (
                 <div key={pay.id} className="px-4 py-2.5 flex justify-between text-sm">
-                  <div>
+                  <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-700">₹{pay.amount}</span>
-                    <span className="text-slate-400 ml-2">{pay.paymentMode}</span>
+                    <span className="text-slate-400">{pay.paymentMode}</span>
+                    {pay.otpVerifiedAt && <ShieldCheck className="w-4 h-4 text-emerald-600" aria-label="Confirmed by farmer OTP" />}
                   </div>
                   <span className="text-slate-400">{pay.paymentDate}</span>
                 </div>
@@ -155,42 +204,7 @@ export default function Purchases() {
             </div>
           )}
 
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            payMutation.mutate({ ...payForm, purchaseId: paymentModal.id, amount: parseFloat(payForm.amount) })
-          }} className="space-y-3 border-t border-slate-200 pt-4">
-            <h3 className="font-medium text-slate-700 text-sm">Add Payment</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Amount ₹ *</label>
-                <input type="number" step="0.01" value={payForm.amount} required onChange={e => setPayForm(f => ({ ...f, amount: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Date *</label>
-                <input type="date" value={payForm.paymentDate} required onChange={e => setPayForm(f => ({ ...f, paymentDate: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Mode</label>
-                <select value={payForm.paymentMode} onChange={e => setPayForm(f => ({ ...f, paymentMode: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
-                  {['CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE'].map(m => <option key={m}>{m}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Ref No.</label>
-                <input value={payForm.referenceNumber} onChange={e => setPayForm(f => ({ ...f, referenceNumber: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" />
-              </div>
-            </div>
-            <button type="submit" disabled={payMutation.isPending}
-              className="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-60">
-              {payMutation.isPending ? 'Adding...' : 'Add Payment'}
-            </button>
-          </form>
+          <PaymentPanel key={paymentModal.id} purchase={paymentModal} farmerVerified={!!farmerVerified(paymentModal.farmerId)} />
         </Modal>
       )}
     </div>

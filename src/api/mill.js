@@ -4,12 +4,23 @@ export const getFarmers = () => api.get('/farmers').then(r => r.data)
 export const createFarmer = (data) => api.post('/farmers', data).then(r => r.data)
 export const updateFarmer = (id, data) => api.put(`/farmers/${id}`, data).then(r => r.data)
 export const deleteFarmer = (id) => api.delete(`/farmers/${id}`)
+export const sendFarmerOtp = (phone) => api.post('/farmers/otp/send', { phone }).then(r => r.data)
+export const verifyFarmerOtp = (phone, otp) => api.post('/farmers/otp/verify', { phone, otp }).then(r => r.data)
+export const getFarmerPhoto = (id, version) =>
+  api.get(`/farmers/${id}/photo`, { params: { v: version }, responseType: 'blob' }).then(r => r.data)
+export const uploadFarmerPhoto = (id, file) => {
+  const body = new FormData()
+  body.append('file', file)
+  return api.put(`/farmers/${id}/photo`, body).then(r => r.data)
+}
+export const deleteFarmerPhoto = (id) => api.delete(`/farmers/${id}/photo`)
 
 export const getPurchases = () => api.get('/purchases').then(r => r.data)
 export const createPurchase = (data) => api.post('/purchases', data).then(r => r.data)
 
 export const getPayments = (purchaseId) => api.get(`/payments?purchaseId=${purchaseId}`).then(r => r.data)
 export const createPayment = (data) => api.post('/payments', data).then(r => r.data)
+export const sendPaymentOtp = (purchaseId, amount) => api.post('/payments/otp/send', { purchaseId, amount }).then(r => r.data)
 
 export const getBatches = () => api.get('/mill-batches').then(r => r.data)
 export const createBatch = (data) => api.post('/mill-batches', data).then(r => r.data)
@@ -40,3 +51,7 @@ export const getOperators = () => api.get('/mill/operators').then(r => r.data)
 export const createOperator = (data) => api.post('/mill/operators', data).then(r => r.data)
 export const toggleOperatorStatus = (id) => api.patch(`/mill/operators/${id}/status`).then(r => r.data)
 export const resetOperatorPassword = (id) => api.post(`/mill/operators/${id}/reset-password`).then(r => r.data)
+
+export const getBranding = () => api.get('/mill/branding').then(r => r.data || null)
+export const getMillLogo = (version) =>
+  api.get('/mill/logo', { params: { v: version }, responseType: 'blob' }).then(r => r.data)

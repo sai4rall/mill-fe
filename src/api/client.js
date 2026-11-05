@@ -1,6 +1,11 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+// Backend location, fixed at build time:
+//  - VITE_API_URL unset/empty → same origin ("/api"): Vite dev proxy locally, nginx BACKEND_URL proxy in Docker.
+//  - VITE_API_URL=https://backend.example.com → the browser calls the backend directly (backend must allow CORS).
+export const API_BASE = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/api`
+
+const api = axios.create({ baseURL: API_BASE })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')

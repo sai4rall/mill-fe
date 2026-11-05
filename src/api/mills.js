@@ -1,4 +1,4 @@
-import api from './client'
+import api, { API_BASE } from './client'
 
 export const getMills = () => api.get('/admin/mills').then(r => r.data)
 export const createMill = (data) => api.post('/admin/mills', data).then(r => r.data)
@@ -19,5 +19,5 @@ export const getMillStockExcelUrl = (millId, millName, fromDate, toDate) => {
   const params = new URLSearchParams({ millName })
   if (fromDate) params.append('fromDate', fromDate)
   if (toDate) params.append('toDate', toDate)
-  return `/api/stock/statement/export/excel?${params.toString()}`
+  return `${API_BASE}/stock/statement/export/excel?${params.toString()}`
 }

@@ -1,0 +1,49 @@
+/* v4 (HeroUI v3 + Motion). Preflight already comes from src/index.css, so only Tailwind's theme/utilities and
+   HeroUI's base, component and theme layers are pulled in here (HeroUI's full entry would re-import Tailwind). */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+@import "@heroui/styles/base/base.css" layer(base);
+@import "@heroui/styles/components/index.css" layer(components);
+@import "@heroui/styles/themes/default" layer(theme);
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/variants";
+@source "./";
+@source "../../node_modules/@heroui/react/dist";
+
+/* Mill green on a warm, soft canvas. Loaded only with the /v4 chunk. */
+:root, [data-theme="light"] {
+  --radius: 0.875rem;
+  --accent: oklch(0.6 0.15 160);
+  --accent-foreground: oklch(0.99 0.01 160);
+  --success: oklch(0.65 0.16 155);
+  --background: oklch(0.982 0.004 120);
+  --surface: oklch(1 0 0);
+  --border: oklch(0.92 0.006 120);
+  --focus: oklch(0.6 0.15 160);
+}
+
+@theme inline {
+  --font-display: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+.v4-root {
+  min-height: 100dvh;
+  background:
+    radial-gradient(60rem 28rem at 15% -10%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 70%),
+    radial-gradient(50rem 24rem at 95% -5%, color-mix(in oklab, oklch(0.8 0.15 90) 18%, transparent), transparent 70%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+.v4-root th { white-space: nowrap; }
+.v4-num { font-variant-numeric: tabular-nums; }
+.v4-glass { background: color-mix(in oklab, var(--surface) 72%, transparent); backdrop-filter: saturate(1.6) blur(16px); }
+
+/* Slow shimmering border used on the dashboard hero. */
+@keyframes v4-sheen { to { background-position: 200% center; } }
+.v4-sheen { background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%) 0 0 / 200% 100%; animation: v4-sheen 4.5s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .v4-sheen { animation: none; } }

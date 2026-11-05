@@ -1,0 +1,27 @@
+/* v2-only touches on top of Mantine. Scoped to the v2 shell so the classic UI is unaffected. */
+.v2-root {
+  background: #f4f8f5;
+  min-height: 100dvh;
+}
+.v2-root .v2-table thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mantine-color-gray-6);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--mantine-color-gray-0);
+}
+.v2-root .v2-hero {
+  background: linear-gradient(135deg, #0c9356 0%, #16b46a 45%, #14b8a6 100%);
+  color: white;
+}
+.v2-root .v2-login-art {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.12), transparent 45%),
+    linear-gradient(150deg, #0a7447 0%, #16b46a 55%, #2dd4bf 100%);
+}
+.v2-root .v2-num {
+  font-variant-numeric: tabular-nums;
+}

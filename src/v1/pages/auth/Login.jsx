@@ -70,7 +70,7 @@ export default function Login() {
           </button>
         </form>
         <p className="text-xs text-slate-400 text-center mt-6">
-          <a href="/v2/login" className="text-emerald-700 hover:underline font-medium">Try the new UI →</a>
+          <a href="/v4/login" className="text-emerald-700 hover:underline font-medium">Try the new UI →</a>
         </p>
       </div>
     </div>

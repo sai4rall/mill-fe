@@ -1,23 +1,27 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../shared/context/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import Layout from './components/Layout'
 import FeatureGate from './components/FeatureGate'
 import Login from './pages/auth/Login'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import MillStockStatement from './pages/admin/MillStockStatement'
-import Dashboard from './pages/mill/Dashboard'
-import Farmers from './pages/mill/Farmers'
-import Purchases from './pages/mill/Purchases'
-import MillOperations from './pages/mill/MillOperations'
-import ExportOrders from './pages/mill/ExportOrders'
-import StockReport from './pages/mill/StockReport'
-import Operators from './pages/mill/Operators'
-import TruckTracking from './pages/mill/TruckTracking'
-import DevConsole from './pages/dev/DevConsole'
-import MoistureSettings from './pages/mill/MoistureSettings'
-import GlobalMoisture from './pages/admin/GlobalMoisture'
 import { homePathFor } from '../shared/utils/roles'
+
+// Pages load on demand, so the first screen does not download every page and the PDF/Excel export libraries.
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const MillStockStatement = lazy(() => import('./pages/admin/MillStockStatement'))
+const Dashboard = lazy(() => import('./pages/mill/Dashboard'))
+const Farmers = lazy(() => import('./pages/mill/Farmers'))
+const Purchases = lazy(() => import('./pages/mill/Purchases'))
+const MillOperations = lazy(() => import('./pages/mill/MillOperations'))
+const ExportOrders = lazy(() => import('./pages/mill/ExportOrders'))
+const Shipments = lazy(() => import('./pages/mill/Shipments'))
+const StockReport = lazy(() => import('./pages/mill/StockReport'))
+const Operators = lazy(() => import('./pages/mill/Operators'))
+const TruckTracking = lazy(() => import('./pages/mill/TruckTracking'))
+const DevConsole = lazy(() => import('./pages/dev/DevConsole'))
+const MoistureSettings = lazy(() => import('./pages/mill/MoistureSettings'))
+const GlobalMoisture = lazy(() => import('./pages/admin/GlobalMoisture'))
 
 function RootRedirect() {
   const { user } = useAuth()
@@ -28,6 +32,7 @@ function RootRedirect() {
 /** The classic UI (v1, Tailwind), served from the site root. */
 export default function V1App() {
   return (
+          <Suspense fallback={<div className="p-8 text-sm text-slate-400">Loading…</div>}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<RootRedirect />} />
@@ -81,7 +86,7 @@ export default function V1App() {
             } />
             <Route path="/shipments" element={
               <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
-                <Layout><FeatureGate feature="shipments" name="Shipments"><ExportOrders /></FeatureGate></Layout>
+                <Layout><FeatureGate feature="shipments" name="Shipments"><Shipments /></FeatureGate></Layout>
               </PrivateRoute>
             } />
             <Route path="/truck-tracking" element={
@@ -90,7 +95,7 @@ export default function V1App() {
               </PrivateRoute>
             } />
             <Route path="/stock" element={
-              <PrivateRoute roles={['MILL_ADMIN']}>
+              <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
                 <Layout><FeatureGate feature="stock_report" name="Stock Report"><StockReport /></FeatureGate></Layout>
               </PrivateRoute>
             } />
@@ -105,5 +110,6 @@ export default function V1App() {
               </PrivateRoute>
             } />
           </Routes>
+          </Suspense>
   )
 }

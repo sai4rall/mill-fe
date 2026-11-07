@@ -13,14 +13,14 @@ const TONES = {
 export default function StatTile({ label, value, display, unit = 'Qtl', icon: Icon, tone = 'emerald', decimals = 2, prefix, className, big }) {
   return (
     <motion.div variants={rise} {...hoverLift}
-      className={cx('relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]', className)}>
+      className={cx('relative min-w-0 overflow-hidden rounded-3xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5', className)}>
       <div className={cx('pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-gradient-to-br to-transparent blur-2xl', TONES[tone])} />
       <div className="relative flex h-full flex-col justify-between gap-4">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-medium text-muted">{label}</p>
+          <p className="min-w-0 text-xs font-medium text-muted sm:text-sm">{label}</p>
           {Icon && <div className={cx('flex size-9 items-center justify-center rounded-xl bg-surface-secondary', TONES[tone].split(' ')[1])}><Icon className="size-[18px]" /></div>}
         </div>
-        <p className={cx('font-bold tracking-tight', big ? 'text-4xl' : 'text-2xl')}>
+        <p className={cx('truncate font-bold tracking-tight', big ? 'text-2xl sm:text-4xl' : 'text-lg sm:text-2xl')}>
           {display ?? <NumberTicker value={value} decimals={decimals} prefix={prefix} />}
           {display == null && unit && <span className="ml-1.5 text-sm font-medium text-muted">{unit}</span>}
         </p>

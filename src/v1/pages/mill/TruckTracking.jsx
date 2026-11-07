@@ -11,6 +11,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { todayISO } from '../../../shared/utils/dates'
+import GpsKeyCard from '../../components/GpsKeyCard'
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
@@ -62,6 +63,7 @@ export default function TruckTracking() {
 
   return (
     <div>
+      <GpsKeyCard />
       <div className="flex items-center gap-3 mb-6">
         <div className="bg-emerald-100 rounded-lg p-2">
           <MapPin className="w-5 h-5 text-emerald-600" />

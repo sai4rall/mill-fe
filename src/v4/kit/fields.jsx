@@ -109,7 +109,7 @@ export function DateInput({ label, value, onChange, min, max, allowFuture = fals
       </DateField.Group>
       <FieldError>{message}</FieldError>
       <DatePicker.Popover>
-        <Calendar aria-label={label || 'Date'}>
+        <Calendar aria-label={label || 'Date'} maxValue={maxValue} minValue={minValue}>
           <Calendar.Header>
             <Calendar.YearPickerTrigger><Calendar.YearPickerTriggerHeading /><Calendar.YearPickerTriggerIndicator /></Calendar.YearPickerTrigger>
             <Calendar.NavButton slot="previous" />

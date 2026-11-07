@@ -15,7 +15,7 @@ const PAY = [{ id: 'PAID', label: 'Paid', color: '#059669' }, { id: 'PARTIAL', l
 
 function Tile({ title, subtitle, className, children }) {
   return (
-    <motion.section variants={rise} {...hoverLift} className={cx('rounded-3xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]', className)}>
+    <motion.section variants={rise} {...hoverLift} className={cx('min-w-0 rounded-3xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5', className)}>
       <div className="mb-4"><h2 className="font-bold">{title}</h2>{subtitle && <p className="text-xs text-muted">{subtitle}</p>}</div>
       {children}
     </motion.section>
@@ -49,15 +49,15 @@ export default function Dashboard() {
   const [paddy, inMill, rice, ...totals] = STOCK_TILES
 
   return (
-    <div className="grid auto-rows-[minmax(140px,auto)] gap-4 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:auto-rows-[minmax(140px,auto)] md:grid-cols-4">
       {/* Hero */}
-      <motion.section variants={rise} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white shadow-xl shadow-emerald-900/20 md:col-span-2 md:row-span-2 sm:p-8">
+      <motion.section variants={rise} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white shadow-xl shadow-emerald-900/20 col-span-2 md:row-span-2 sm:p-8">
         <div className="v4-sheen pointer-events-none absolute inset-0" />
         <motion.div aria-hidden className="pointer-events-none absolute -right-16 -bottom-16 size-72 rounded-full bg-lime-300/30 blur-3xl" animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
         <div className="relative flex h-full flex-col justify-between gap-8">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur"><Sparkles className="size-3.5" />{now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">{greeting(now)},<br />{user?.fullName || user?.username}</h1>
+            <h1 className="mt-4 text-2xl font-extrabold tracking-tight sm:text-4xl">{greeting(now)},<br />{user?.fullName || user?.username}</h1>
           </div>
           <div className="grid grid-cols-2 gap-6">
             <div><p className="text-xs text-emerald-100/80">Outstanding to farmers</p><p className="text-2xl font-bold"><NumberTicker value={due} prefix="₹" /></p></div>
@@ -71,8 +71,8 @@ export default function Dashboard() {
       <StatTile label={inMill.label} value={stock?.paddyInMill} icon={inMill.icon} tone={inMill.tone} />
       <StatTile label={totals[0].label} value={stock?.[totals[0].key]} icon={totals[0].icon} tone={totals[0].tone} />
 
-      <Tile title="Paddy to rice flow" subtitle="Quintals at each stage" className="md:col-span-3 md:row-span-2">
-        <div className="h-64">
+      <Tile title="Paddy to rice flow" subtitle="Quintals at each stage" className="col-span-2 md:col-span-3 md:row-span-2">
+        <div className="h-56 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={flow} margin={{ left: -16, right: 8 }}>
               <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -86,7 +86,7 @@ export default function Dashboard() {
         </div>
       </Tile>
 
-      <Tile title="Payments" subtitle="Purchases by status" className="md:row-span-2">
+      <Tile title="Payments" subtitle="Purchases by status" className="col-span-2 md:col-span-1 md:row-span-2">
         {pie.length === 0 ? <p className="py-12 text-center text-sm text-muted">No purchases yet</p> : (
           <>
             <div className="relative h-44">
@@ -104,7 +104,7 @@ export default function Dashboard() {
         )}
       </Tile>
 
-      <Tile title="Recent purchases" className="md:col-span-2">
+      <Tile title="Recent purchases" className="col-span-2">
         {recent.length === 0 ? <EmptyState icon={ShoppingCart} title="No purchases yet" /> : (
           <ul className="divide-y divide-border">
             {recent.map((p, i) => (
@@ -116,7 +116,7 @@ export default function Dashboard() {
           </ul>
         )}
       </Tile>
-      <Tile title="Open orders" className="md:col-span-2">
+      <Tile title="Open orders" className="col-span-2">
         {open.length === 0 ? <EmptyState icon={Package} title="No pending orders" /> : (
           <ul className="divide-y divide-border">
             {open.slice(0, 5).map((o, i) => (

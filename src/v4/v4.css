@@ -1,49 +1,154 @@
 /* v4 (HeroUI v3 + Motion). Preflight already comes from src/index.css, so only Tailwind's theme/utilities and
-   HeroUI's base, component and theme layers are pulled in here (HeroUI's full entry would re-import Tailwind). */
+   HeroUI's base, component and theme layers are pulled in here (HeroUI's full entry would re-import Tailwind).
+   Only the HeroUI components v4 uses are imported, in HeroUI's required order (shared primitives first). */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "tw-animate-css";
 @import "@heroui/styles/base/base.css" layer(base);
-@import "@heroui/styles/components/index.css" layer(components);
+@import "@heroui/styles/components/close-button.css" layer(components);
+@import "@heroui/styles/components/description.css" layer(components);
+@import "@heroui/styles/components/error-message.css" layer(components);
+@import "@heroui/styles/components/field-error.css" layer(components);
+@import "@heroui/styles/components/label.css" layer(components);
+@import "@heroui/styles/components/tabs.css" layer(components);
+@import "@heroui/styles/components/button.css" layer(components);
+@import "@heroui/styles/components/toggle-button.css" layer(components);
+@import "@heroui/styles/components/toggle-button-group.css" layer(components);
+@import "@heroui/styles/components/dropdown.css" layer(components);
+@import "@heroui/styles/components/list-box-item.css" layer(components);
+@import "@heroui/styles/components/list-box-section.css" layer(components);
+@import "@heroui/styles/components/list-box.css" layer(components);
+@import "@heroui/styles/components/menu-item.css" layer(components);
+@import "@heroui/styles/components/menu-section.css" layer(components);
+@import "@heroui/styles/components/menu.css" layer(components);
+@import "@heroui/styles/components/switch.css" layer(components);
+@import "@heroui/styles/components/chip.css" layer(components);
+@import "@heroui/styles/components/table.css" layer(components);
+@import "@heroui/styles/components/alert.css" layer(components);
+@import "@heroui/styles/components/skeleton.css" layer(components);
+@import "@heroui/styles/components/progress-bar.css" layer(components);
+@import "@heroui/styles/components/spinner.css" layer(components);
+@import "@heroui/styles/components/toast.css" layer(components);
+@import "@heroui/styles/components/input-otp.css" layer(components);
+@import "@heroui/styles/components/input.css" layer(components);
+@import "@heroui/styles/components/input-group.css" layer(components);
+@import "@heroui/styles/components/textfield.css" layer(components);
+@import "@heroui/styles/components/search-field.css" layer(components);
+@import "@heroui/styles/components/textarea.css" layer(components);
+@import "@heroui/styles/components/calendar.css" layer(components);
+@import "@heroui/styles/components/calendar-year-picker.css" layer(components);
+@import "@heroui/styles/components/date-field.css" layer(components);
+@import "@heroui/styles/components/date-input-group.css" layer(components);
+@import "@heroui/styles/components/date-picker.css" layer(components);
+@import "@heroui/styles/components/separator.css" layer(components);
+@import "@heroui/styles/components/surface.css" layer(components);
+@import "@heroui/styles/components/avatar.css" layer(components);
+@import "@heroui/styles/components/drawer.css" layer(components);
+@import "@heroui/styles/components/modal.css" layer(components);
+@import "@heroui/styles/components/popover.css" layer(components);
+@import "@heroui/styles/components/tooltip.css" layer(components);
+@import "@heroui/styles/components/combo-box.css" layer(components);
+@import "@heroui/styles/components/select.css" layer(components);
 @import "@heroui/styles/themes/default" layer(theme);
 @import "@heroui/styles/utilities";
 @import "@heroui/styles/variants";
 @source "./";
 @source "../../node_modules/@heroui/react/dist";
 
-/* Mill green on a warm, soft canvas. Loaded only with the /v4 chunk. */
+/*
+ * Design tokens (v4 design review): semantic names that mean something in the mill. Components use these through
+ * Tailwind names (text-paddy, bg-risk-soft, rounded-card, shadow-e1…); raw palette classes and hex values are
+ * not allowed in src/v4 (see v4/test/designTokens.test.js).
+ */
 :root, [data-theme="light"] {
-  --radius: 0.875rem;
-  --accent: oklch(0.6 0.15 160);
+  --radius: 0.625rem;
+  --field-radius: 6px;
+  --accent: oklch(0.52 0.12 160);            /* #1f7a55 */
   --accent-foreground: oklch(0.99 0.01 160);
-  --success: oklch(0.65 0.16 155);
-  --background: oklch(0.982 0.004 120);
+  --focus: oklch(0.52 0.12 160);
+  --success: oklch(0.52 0.12 160);
+  --background: oklch(0.972 0.005 150);       /* canvas #f4f6f3 */
   --surface: oklch(1 0 0);
-  --border: oklch(0.92 0.006 120);
-  --focus: oklch(0.6 0.15 160);
+  --foreground: oklch(0.24 0.014 160);        /* ink #1c2420 */
+  --muted: oklch(0.47 0.016 160);             /* 6:1 on white, 5.4:1 on the canvas */
+  --border: oklch(0.9 0.008 150);
+  --field-border-width: 1px;
+  --field-border: oklch(0.86 0.01 150);
+  --field-background: oklch(1 0 0);
+
+  --paddy: oklch(0.58 0.12 75);    --paddy-soft: oklch(0.95 0.04 85);
+  --rice: oklch(0.55 0.08 230);    --rice-soft: oklch(0.95 0.025 230);
+  --money: oklch(0.24 0.014 160);
+  --risk: oklch(0.52 0.19 28);     --risk-soft: oklch(0.95 0.03 28);
+  --warn: oklch(0.55 0.13 65);     --warn-soft: oklch(0.95 0.045 80);
+  --ok: oklch(0.52 0.12 160);      --ok-soft: oklch(0.95 0.035 160);
+  --canvas: var(--background);
+  --e1: 0 1px 2px oklch(0.2 0.02 160 / 0.06), 0 1px 1px oklch(0.2 0.02 160 / 0.04);
+  --e2: 0 12px 32px -8px oklch(0.2 0.02 160 / 0.18), 0 2px 6px oklch(0.2 0.02 160 / 0.08);
+}
+
+.dark, [data-theme="dark"] {
+  --accent: oklch(0.76 0.12 160);             /* #5fc596 */
+  --accent-foreground: oklch(0.2 0.03 160);
+  --focus: oklch(0.76 0.12 160);
+  --success: oklch(0.76 0.12 160);
+  --background: oklch(0.19 0.012 160);        /* #141a17 */
+  --surface: oklch(0.235 0.013 160);          /* #1b231f */
+  --surface-secondary: oklch(0.27 0.013 160);
+  --foreground: oklch(0.93 0.01 160);
+  --muted: oklch(0.74 0.02 160);
+  --border: oklch(0.32 0.012 160);
+  --field-border: oklch(0.4 0.012 160);
+  --field-background: oklch(0.21 0.012 160);
+
+  --paddy: oklch(0.8 0.12 80);     --paddy-soft: oklch(0.3 0.05 80);
+  --rice: oklch(0.78 0.08 230);    --rice-soft: oklch(0.3 0.04 230);
+  --money: oklch(0.93 0.01 160);
+  --risk: oklch(0.75 0.14 28);     --risk-soft: oklch(0.3 0.06 28);
+  --warn: oklch(0.8 0.12 75);      --warn-soft: oklch(0.31 0.05 75);
+  --ok: oklch(0.76 0.12 160);      --ok-soft: oklch(0.3 0.05 160);
+  --e1: 0 1px 2px oklch(0 0 0 / 0.4);
+  --e2: 0 16px 40px -8px oklch(0 0 0 / 0.6), 0 2px 6px oklch(0 0 0 / 0.4);
+  color-scheme: dark;
 }
 
 @theme inline {
   --font-display: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-paddy: var(--paddy);  --color-paddy-soft: var(--paddy-soft);
+  --color-rice: var(--rice);    --color-rice-soft: var(--rice-soft);
+  --color-money: var(--money);
+  --color-risk: var(--risk);    --color-risk-soft: var(--risk-soft);
+  --color-warn: var(--warn);    --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);        --color-ok-soft: var(--ok-soft);
+  --color-canvas: var(--canvas);
+  /* Radius scale 6 / 10 / 16: inputs and chips, cards, sheets and dialogs. */
+  --radius-field: 6px;
+  --radius-card: 10px;
+  --radius-sheet: 16px;
+  /* Elevation 0 / 1 / 2: flat lists, cards, sheets and menus. */
+  --shadow-e1: var(--e1);
+  --shadow-e2: var(--e2);
 }
 
 .v4-root {
   min-height: 100dvh;
-  background:
-    radial-gradient(60rem 28rem at 15% -10%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 70%),
-    radial-gradient(50rem 24rem at 95% -5%, color-mix(in oklab, oklch(0.8 0.15 90) 18%, transparent), transparent 70%),
-    var(--background);
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;
 }
 .v4-root th { white-space: nowrap; }
 .v4-num { font-variant-numeric: tabular-nums; }
-.v4-glass { background: color-mix(in oklab, var(--surface) 72%, transparent); backdrop-filter: saturate(1.6) blur(16px); }
+.v4-glass { background: color-mix(in oklab, var(--surface) 82%, transparent); backdrop-filter: saturate(1.4) blur(14px); }
+/* Fields inside dialogs and sheets get a faint tint so they read as inputs on a white surface. */
+.modal__dialog, .drawer__dialog { --field-background: color-mix(in oklab, var(--surface) 94%, var(--foreground) 6%); }
+.dark .modal__dialog, .dark .drawer__dialog { --field-background: oklch(0.2 0.012 160); }
 
-/* Slow shimmering border used on the dashboard hero. */
-@keyframes v4-sheen { to { background-position: 200% center; } }
-.v4-sheen { background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%) 0 0 / 200% 100%; animation: v4-sheen 4.5s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .v4-sheen { animation: none; } }
+/* A value that just changed gets a short highlight (the only motion on figures). */
+@keyframes v4-changed { from { background-color: color-mix(in oklab, var(--accent) 22%, transparent); } to { background-color: transparent; } }
+.v4-changed { animation: v4-changed 900ms ease-out; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .v4-changed { animation: none; } }
+
+/* Touch targets on phones. */
+@media (pointer: coarse) { .v4-root .button { min-height: 44px; } }

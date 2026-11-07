@@ -37,3 +37,6 @@ if (!window.IntersectionObserver) {
     takeRecords() { return [] }
   }
 }
+
+// jsdom has no Web Animations API; HeroUI's tab indicator asks for running animations.
+if (typeof Element !== 'undefined' && !Element.prototype.getAnimations) Element.prototype.getAnimations = () => []

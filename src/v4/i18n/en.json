@@ -1,0 +1,143 @@
+{
+ "nav": {
+  "today": "Today",
+  "procurement": "Procurement",
+  "milling": "Milling",
+  "sales": "Sales",
+  "settings": "Settings",
+  "purchases": "Purchases",
+  "farmers": "Farmers",
+  "money": "Money",
+  "batches": "Batches",
+  "stock": "Stock",
+  "orders": "Orders",
+  "shipments": "Shipments",
+  "moisture": "Moisture",
+  "operators": "Operators",
+  "trucks": "Trucks",
+  "mills": "Mills",
+  "devConsole": "Dev Console",
+  "more": "More",
+  "record": "Record",
+  "allPages": "All pages",
+  "rejected": "Rejected lorries"
+ },
+ "account": {
+  "changePassword": "Change password",
+  "classic": "Classic view",
+  "logout": "Logout",
+  "theme": "Theme",
+  "language": "Language"
+ },
+ "theme": {
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark"
+ },
+ "search": {
+  "placeholder": "Search or jump to…"
+ },
+ "today": {
+  "title": "Today",
+  "purchases": "{{count}} purchases · {{qty}}",
+  "noEntries": "No purchases recorded today yet.",
+  "entries": "Today's purchases"
+ },
+ "record": {
+  "title": "Record purchase",
+  "subtitle": "Weighment at the mill. Price follows weight, rate and moisture.",
+  "farmer": "Farmer / agent / supplier",
+  "searchFarmers": "Search farmers…",
+  "noFarmers": "No farmers found",
+  "date": "Purchase date",
+  "truck": "Truck number",
+  "truckHint": "Used for GPS truck tracking",
+  "weight": "Weight",
+  "rate": "Rate",
+  "moisture": "Moisture",
+  "notes": "Notes",
+  "receipt": "Receipt",
+  "gross": "Gross amount",
+  "deduction": "Moisture deduction ({{pct}}%)",
+  "net": "Net payable",
+  "noRanges": "No moisture ranges are configured, so no deduction applies.",
+  "save": "Save",
+  "saveAndAdd": "Save and add another",
+  "cancel": "Cancel",
+  "saved": "Purchase recorded",
+  "queued": "No connection. Saved on this device and will be sent automatically.",
+  "errFarmer": "Select a farmer",
+  "errDate": "Purchase date is required",
+  "errWeight": "Enter the weight",
+  "errRate": "Enter the rate",
+  "errMoisture": "Enter the moisture %"
+ },
+ "outbox": {
+  "waiting_one": "1 entry waiting to sync",
+  "waiting_other": "{{count}} entries waiting to sync",
+  "retry": "Send now"
+ },
+ "purchases": {
+  "title": "Purchases",
+  "subtitle": "Paddy bought from farmers and payments released",
+  "pay": "Pay {{amount}}",
+  "due": "Due",
+  "empty": "No purchases match these filters."
+ },
+ "filter": {
+  "search": "Farmer or truck",
+  "all": "All",
+  "today": "Today",
+  "week": "7 days",
+  "month": "30 days",
+  "pending": "Pending",
+  "partial": "Partial",
+  "paid": "Paid",
+  "clear": "Clear filters",
+  "sort": "Sort",
+  "newest": "Newest",
+  "oldest": "Oldest",
+  "dueHigh": "Most due"
+ },
+ "farmers": {
+  "title": "Farmers, agents & suppliers",
+  "register": "Register",
+  "search": "Search by name, village or mobile",
+  "verified": "Verified",
+  "unverified": "Unverified",
+  "outstanding": "Outstanding",
+  "lastPurchase": "Last purchase",
+  "registration": "Farmer / agent / supplier registration",
+  "type": "Type",
+  "all": "All",
+  "FARMER": "Farmer",
+  "AGENT": "Agent",
+  "SUPPLIER": "Supplier",
+  "FARMERS": "Farmers",
+  "AGENTS": "Agents",
+  "SUPPLIERS": "Suppliers"
+ },
+ "batches": {
+  "title": "Batches",
+  "subtitle": "Paddy-to-rice batches, from the mill floor to finished rice",
+  "inProgress": "In progress",
+  "completed": "Completed",
+  "start": "Start batch",
+  "complete": "Complete batch",
+  "paddyIn": "Paddy in",
+  "riceOut": "Rice out",
+  "expected": "Expected",
+  "conversion": "Conversion"
+ },
+ "status": {
+  "PENDING": "Pending",
+  "PARTIAL": "Partial",
+  "PAID": "Paid",
+  "IN_PROGRESS": "In progress",
+  "COMPLETED": "Completed",
+  "FULFILLED": "Fulfilled",
+  "CANCELLED": "Cancelled",
+  "ACTIVE": "Active",
+  "INACTIVE": "Inactive"
+ }
+}

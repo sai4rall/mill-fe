@@ -13,6 +13,7 @@ const MillStockStatement = lazy(() => import('./pages/admin/MillStockStatement')
 const Dashboard = lazy(() => import('./pages/mill/Dashboard'))
 const Farmers = lazy(() => import('./pages/mill/Farmers'))
 const Purchases = lazy(() => import('./pages/mill/Purchases'))
+const RejectedLorries = lazy(() => import('./pages/mill/RejectedLorries'))
 const MillOperations = lazy(() => import('./pages/mill/MillOperations'))
 const ExportOrders = lazy(() => import('./pages/mill/ExportOrders'))
 const Shipments = lazy(() => import('./pages/mill/Shipments'))
@@ -72,6 +73,11 @@ export default function V1App() {
             <Route path="/purchases" element={
               <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
                 <Layout><FeatureGate feature="purchases" name="Purchases"><Purchases /></FeatureGate></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/rejected-lorries" element={
+              <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
+                <Layout><FeatureGate feature="purchases" name="Rejected Lorries"><RejectedLorries /></FeatureGate></Layout>
               </PrivateRoute>
             } />
             <Route path="/mill-ops" element={

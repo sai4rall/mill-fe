@@ -8,9 +8,11 @@ import Modal from '../../components/Modal'
 import FarmerAvatar from '../../components/FarmerAvatar'
 import { resizeImage, normalizePhone } from '../../../shared/utils/image'
 import { validateFarmer, normalizeFarmer, serverFieldErrors } from '../../../shared/utils/farmerValidation'
+import { PARTY_TYPES, partyTypeLabel } from '../../../shared/utils/partyTypes'
 import { Plus, Pencil, Trash2, User, Camera, BadgeCheck, AlertCircle } from 'lucide-react'
 
-const EMPTY = { name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
+const PAGE_SIZE = 20
+const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
 const EMPTY_PHOTO = { file: null, preview: null, removed: false }
 const EMPTY_OTP = { sentTo: '', code: '', token: '', verifiedPhone: '', cooldown: 0 }
 
@@ -30,6 +32,8 @@ export default function Farmers() {
   const qc = useQueryClient()
   const [modal, setModal] = useState(null) // null | { id?, farmer? }
   const [form, setForm] = useState(EMPTY)
+  const [typeFilter, setTypeFilter] = useState('ALL')
+  const [page, setPage] = useState(0)
   const [photo, setPhoto] = useState(EMPTY_PHOTO)
   const [photoError, setPhotoError] = useState('')
   const [otp, setOtp] = useState(EMPTY_OTP)
@@ -40,6 +44,10 @@ export default function Farmers() {
   const fileInput = useRef(null)
 
   const { data: farmers = [], isLoading } = useQuery({ queryKey: ['farmers'], queryFn: getFarmers })
+  const filtered = typeFilter === 'ALL' ? farmers : farmers.filter(f => (f.type || 'FARMER') === typeFilter)
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const current = Math.min(page, pages - 1)
+  const shown = filtered.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE)
 
   // Resend countdown
   useEffect(() => {
@@ -84,7 +92,7 @@ export default function Farmers() {
   const openCreate = () => { resetDialog(); setForm(EMPTY); setModal({}) }
   const openEdit = (f) => {
     resetDialog()
-    setForm({ name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
+    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
     setModal({ id: f.id, farmer: f })
   }
   const closeModal = () => { setModal(null); resetDialog() }
@@ -185,38 +193,60 @@ export default function Farmers() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Farmers</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Farmers, Agents &amp; Suppliers</h1>
         <button onClick={openCreate}
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm">
-          <Plus className="w-4 h-4" /> Add Farmer
+          <Plus className="w-4 h-4" /> Register
         </button>
       </div>
+
+      {farmers.length > 0 && (
+        <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-2 mb-4">
+          {[{ value: 'ALL', plural: 'All' }, ...PARTY_TYPES].map(t => {
+            const count = t.value === 'ALL' ? farmers.length : farmers.filter(f => (f.type || 'FARMER') === t.value).length
+            return (
+              <button key={t.value} type="button" onClick={() => { setTypeFilter(t.value); setPage(0) }} aria-pressed={typeFilter === t.value}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${typeFilter === t.value ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                {t.plural} <span className="text-xs opacity-70">{count}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {isLoading ? <p className="text-slate-400 text-center py-20">Loading...</p> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {farmers.length === 0 ? (
             <div className="text-center py-16">
               <User className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-400">No farmers added yet</p>
+              <p className="text-slate-400">No farmers, agents or suppliers added yet</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  {['Name', 'Mobile', 'Bank Account', 'Bank Name', 'Actions'].map(h => (
+                  {['Name', 'Type', 'Mobile', 'Bank Account', 'Bank Name', 'Actions'].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {farmers.map(f => (
+                {shown.length === 0 && (
+                  <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-400">None registered as this type yet</td></tr>
+                )}
+                {shown.map(f => (
                   <tr key={f.id} className="hover:bg-slate-50">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <FarmerAvatar farmer={f} />
                         <span className="font-medium text-slate-800 text-sm">{f.name}</span>
                       </div>
+                    </td>
+                    <td className="px-5 py-3 text-sm">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.type === 'AGENT' ? 'bg-blue-50 text-blue-700' : f.type === 'SUPPLIER' ? 'bg-violet-50 text-violet-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {partyTypeLabel(f.type)}
+                      </span>
                     </td>
                     <td className="px-5 py-3 text-slate-500 text-sm">
                       {f.phone ? (
@@ -245,13 +275,25 @@ export default function Farmers() {
                 ))}
               </tbody>
               </table>
+              {pages > 1 && (
+                <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-5 py-3 text-sm text-slate-500">
+                  <span>{current * PAGE_SIZE + 1}–{Math.min(filtered.length, (current + 1) * PAGE_SIZE)} of {filtered.length}</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setPage(current - 1)} disabled={current === 0}
+                      className="border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 disabled:opacity-40">Previous</button>
+                    <span>Page {current + 1} of {pages}</span>
+                    <button type="button" onClick={() => setPage(current + 1)} disabled={current >= pages - 1}
+                      className="border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 disabled:opacity-40">Next</button>
+                  </div>
+                </nav>
+              )}
             </div>
           )}
         </div>
       )}
 
       {modal && (
-        <Modal title={modal.id ? 'Edit Farmer' : 'Add Farmer'} onClose={closeModal}>
+        <Modal title={modal.id ? `Edit ${partyTypeLabel(form.type)}` : 'Farmer / Agent / Supplier Registration'} onClose={closeModal}>
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* Photo */}
             <div className="flex items-center gap-4">
@@ -275,6 +317,18 @@ export default function Farmers() {
               </div>
               <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoPick} />
             </div>
+
+            <fieldset>
+              <legend className="block text-sm font-medium text-slate-700 mb-1">Type *</legend>
+              <div role="radiogroup" aria-label="Type" className="grid grid-cols-3 gap-2">
+                {PARTY_TYPES.map(t => (
+                  <label key={t.value} className={`flex items-center justify-center gap-2 border rounded-lg px-3 py-2 text-sm cursor-pointer ${form.type === t.value ? 'border-emerald-500 bg-emerald-50 text-emerald-800 font-medium' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                    <input type="radio" name="party-type" value={t.value} checked={form.type === t.value} onChange={() => setField('type', t.value)} className="sr-only" />
+                    {t.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             {renderField({ key: 'name', label: 'Full Name', required: true, maxLength: 100, autoComplete: 'off' })}
 

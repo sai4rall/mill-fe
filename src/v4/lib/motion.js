@@ -1,17 +1,18 @@
-// Shared Motion presets so the whole UI moves the same way.
+// Motion budget (design review): motion explains change and nothing else. Pages fade in briefly; data does not
+// stagger or slide; nothing loops; static tiles do not lift. Kept elsewhere: the nav pill, sheets, a batch moving
+// between columns, and the highlight on a value that changed.
 export const ease = [0.22, 1, 0.36, 1]
 
 export const page = {
-  initial: { opacity: 0, y: 12, filter: 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.45, ease } },
-  exit: { opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.2, ease } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.15, ease } },
+  exit: { opacity: 0, transition: { duration: 0.1, ease } },
 }
 
-export const stagger = (gap = 0.06, delay = 0.05) => ({ animate: { transition: { staggerChildren: gap, delayChildren: delay } } })
+/** Layout spring for elements that move between places (nav pill, batch cards). */
+export const move = { type: 'spring', stiffness: 420, damping: 36 }
 
-export const rise = {
-  initial: { opacity: 0, y: 16, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 26 } },
-}
-
-export const hoverLift = { whileHover: { y: -3, transition: { type: 'spring', stiffness: 400, damping: 22 } } }
+/** Used by layout animations only; kept for components that still pass variants (no visual effect). */
+export const rise = {}
+export const stagger = () => ({})
+export const hoverLift = {}

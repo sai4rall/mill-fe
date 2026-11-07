@@ -40,8 +40,8 @@ const field = (label) => screen.getByLabelText(label)
 const saveButton = () => screen.getByRole('button', { name: 'Save' })
 
 async function openAddDialog(user) {
-  await user.click(await screen.findByRole('button', { name: /add farmer/i }))
-  return screen.getByRole('heading', { name: 'Add Farmer' })
+  await user.click(await screen.findByRole('button', { name: /^register$/i }))
+  return screen.getByRole('heading', { name: 'Farmer / Agent / Supplier Registration' })
 }
 
 async function fillValidFarmer(user, overrides = {}) {
@@ -213,11 +213,23 @@ describe('Farmer registration — mobile OTP', () => {
     await user.click(saveButton())
     await waitFor(() => expect(api.createFarmer).toHaveBeenCalledTimes(1))
     expect(api.createFarmer).toHaveBeenCalledWith({
-      name: 'Ramesh Kumar', phone: '9876543210', address: 'Nalgonda',
+      name: 'Ramesh Kumar', type: 'FARMER', phone: '9876543210', address: 'Nalgonda',
       bankAccount: '123456789012', bankName: 'State Bank of India', ifscCode: 'SBIN0001234',
       phoneVerificationToken: 'tok-123',
     })
-    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Add Farmer' })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Farmer / Agent / Supplier Registration' })).not.toBeInTheDocument())
+  })
+
+  it('registers an agent or supplier when that type is chosen', async () => {
+    const user = renderPage()
+    await openAddDialog(user)
+    expect(screen.getByRole('radio', { name: 'Farmer' })).toBeChecked()
+    await user.click(screen.getByRole('radio', { name: 'Agent' }))
+    await fillValidFarmer(user)
+    await verifyPhone(user)
+    await user.click(saveButton())
+    await waitFor(() => expect(api.createFarmer).toHaveBeenCalledTimes(1))
+    expect(api.createFarmer.mock.calls[0][0]).toMatchObject({ type: 'AGENT' })
   })
 
   it('asks for a new OTP if the number is edited after verification', async () => {
@@ -303,5 +315,41 @@ describe('Editing a farmer', () => {
 
     expect(screen.getByText('Please verify the mobile number with OTP before saving')).toBeInTheDocument()
     expect(api.updateFarmer).not.toHaveBeenCalled()
+  })
+})
+
+describe('Farmers, agents and suppliers list', () => {
+  it('shows each type and filters by it', async () => {
+    api.getFarmers.mockResolvedValue([
+      { id: 1, name: 'Ravi', type: 'FARMER', phone: '9876543210', phoneVerified: true },
+      { id: 2, name: 'Agent Anil', type: 'AGENT', phone: '9123456780', phoneVerified: true },
+      { id: 3, name: 'Sri Traders', type: 'SUPPLIER', phone: '9000000001', phoneVerified: false },
+    ])
+    const user = renderPage()
+    expect((await screen.findByText('Agent Anil')).closest('tr')).toHaveTextContent('Agent')
+    expect(screen.getByText('Sri Traders').closest('tr')).toHaveTextContent('Supplier')
+    await user.click(screen.getByRole('button', { name: /Suppliers/ }))
+    expect(screen.queryByText('Ravi')).toBeNull()
+    expect(screen.getByText('Sri Traders')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Agents/ }))
+    expect(screen.getByText('Agent Anil')).toBeInTheDocument()
+    expect(screen.queryByText('Sri Traders')).toBeNull()
+  })
+})
+
+describe('Farmers list — pagination', () => {
+  it('shows 20 per page and goes back to page 1 when the type filter changes', async () => {
+    api.getFarmers.mockResolvedValue(Array.from({ length: 45 }, (_, i) => ({
+      id: i + 1, name: `Person ${String(i + 1).padStart(2, '0')}`, type: i < 30 ? 'FARMER' : 'AGENT', phone: `90000000${String(i).padStart(2, '0')}`, phoneVerified: true,
+    })))
+    const user = renderPage()
+    expect(await screen.findByText('1–20 of 45')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Page 2 of 3')).toBeInTheDocument()
+    expect(screen.getByText('Person 21')).toBeInTheDocument()
+    expect(screen.queryByText('Person 01')).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Farmers/ }))
+    expect(screen.getByText('1–20 of 30')).toBeInTheDocument()
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument()
   })
 })

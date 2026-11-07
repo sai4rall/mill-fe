@@ -22,3 +22,13 @@ export const getSuperAdmins = () => api.get('/dev/super-admins').then(r => r.dat
 export const createSuperAdmin = (data) => api.post('/dev/super-admins', data).then(r => r.data)
 export const toggleSuperAdmin = (id) => api.patch(`/dev/super-admins/${id}/status`).then(r => r.data)
 export const resetSuperAdminPassword = (id) => api.post(`/dev/super-admins/${id}/reset-password`).then(r => r.data)
+
+// Mills: deactivate / delete (delete needs the mill's exact name as confirmation).
+export const setMillStatus = (millId, status) => api.patch(`/dev/mills/${millId}/status`, { status }).then(r => r.data)
+export const deleteMill = (millId, confirm) => api.delete(`/dev/mills/${millId}`, { params: { confirm } }).then(r => r.data)
+export const deleteSuperAdmin = (id) => api.delete(`/dev/super-admins/${id}`)
+
+// Every account (all roles): list and reset any password (not your own).
+export const getAllUsers = () => api.get('/dev/users').then(r => r.data)
+export const resetUserPassword = (id) => api.post(`/dev/users/${id}/reset-password`).then(r => r.data)
+export const assignMillOwner = (millId, ownerId) => api.put(`/dev/mills/${millId}/owner`, { ownerId }).then(r => r.data)

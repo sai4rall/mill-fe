@@ -4,7 +4,7 @@ import { useAuth } from '../../shared/context/AuthContext'
 import { useFeatures } from '../../shared/features/useFeatures'
 import {
   LayoutDashboard, Users, ShoppingCart, Factory,
-  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets, Menu, X, Sparkles, KeyRound
+  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets, Menu, X, Sparkles, KeyRound, Ban
 } from 'lucide-react'
 import MillBrand from './MillBrand'
 import ChangePasswordModal from './ChangePasswordModal'
@@ -14,6 +14,7 @@ const millNav = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, feature: 'dashboard' },
   { to: '/farmers', label: 'Farmers', icon: Users, feature: 'farmers' },
   { to: '/purchases', label: 'Purchases', icon: ShoppingCart, feature: 'purchases' },
+  { to: '/rejected-lorries', label: 'Rejected Lorries', icon: Ban, feature: 'purchases' },
   { to: '/mill-ops', label: 'Mill Operations', icon: Factory, feature: 'mill_operations' },
   { to: '/orders', label: 'Export Orders', icon: Package, feature: 'export_orders' },
   { to: '/shipments', label: 'Shipments', icon: Truck, feature: 'shipments' },

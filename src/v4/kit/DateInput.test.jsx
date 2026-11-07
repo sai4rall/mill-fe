@@ -13,7 +13,7 @@ function Harness({ onChange = vi.fn(), ...props }) {
 
 const now = new Date()
 const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-const openCalendar = async (u) => { await u.click(screen.getByRole('button', { name: /calendar/i })); return screen.findByRole('grid') }
+const openCalendar = async (u) => { await u.click(await screen.findByRole('button', { name: /calendar/i })); return screen.findByRole('grid') }
 const cell = (grid, n) => within(grid).getAllByRole('gridcell').find(c => c.textContent.trim() === String(n) && !c.querySelector('[data-outside-month]'))
 const isDisabled = (c) => [c, ...c.querySelectorAll('*')].some(e => e.getAttribute('aria-disabled') === 'true' || e.hasAttribute('data-disabled'))
 

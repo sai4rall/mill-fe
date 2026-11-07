@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
 import { Avatar, Button, SearchField } from '@heroui/react'
-import { BadgeCheck, Camera, Landmark, MapPin, Pencil, Phone, Plus, Trash2, Users } from 'lucide-react'
+import { BadgeCheck, Camera, LayoutGrid, Landmark, List, MapPin, Pencil, Phone, Plus, Trash2, Users } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
+  createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, getPurchases, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
 import { normalizeFarmer, serverFieldErrors, validateFarmer } from '../../shared/utils/farmerValidation'
@@ -12,41 +12,83 @@ import { EmptyState, ErrorAlert, FarmerAvatar, Loading, PageHeader, Section, Sta
 import { TextAreaInput, TextInput } from '../kit/fields'
 import { ConfirmDialog, Panel, SubmitButton } from '../kit/overlays'
 import OtpInput from '../kit/OtpInput'
-import { errorMessage, useCountdown } from '../lib/format'
+import DataTable from '../kit/DataTable'
+import { cx, errorMessage, useCountdown } from '../lib/format'
+import { day, money, num } from '../lib/numbers'
+import { usePref } from '../lib/prefs'
+import { useT } from '../i18n'
+import { PARTY_TYPES } from '../../shared/utils/partyTypes'
+import { Pager, usePaged } from '../kit/Pager'
 import { notify } from '../lib/toast'
 
-const EMPTY = { name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
+const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
 const EMPTY_PHOTO = { file: null, preview: null, removed: false }
 const EMPTY_OTP = { sentTo: '', code: '', token: '', verifiedPhone: '' }
 
-function FarmerCard({ f, onEdit, onDelete }) {
+function Actions({ f, onEdit, onDelete }) {
   return (
-    <motion.article layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 28 }} whileHover={{ y: -3 }}
-      className="group flex flex-col gap-4 rounded-3xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+    <div className="flex shrink-0 gap-1" onClick={(e) => e.stopPropagation()}>
+      <Button isIconOnly size="sm" variant="ghost" onPress={onEdit} aria-label={`Edit ${f.name}`}><Pencil className="size-4" /></Button>
+      <Button isIconOnly size="sm" variant="ghost" className="text-danger" onPress={onDelete} aria-label={`Delete ${f.name}`}><Trash2 className="size-4" /></Button>
+    </div>
+  )
+}
+
+function Mobile({ f }) {
+  const { t } = useT()
+  if (!f.phone) return <span className="text-muted">No mobile</span>
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="v4-num">{f.phone}</span>
+      {f.phoneVerified ? <BadgeCheck className="size-4 text-ok" aria-label={t('farmers.verified')} /> : <StatusChip color="warning">{t('farmers.unverified')}</StatusChip>}
+    </span>
+  )
+}
+
+const TYPE_TONE = { FARMER: 'bg-ok-soft text-ok', AGENT: 'bg-rice-soft text-rice', SUPPLIER: 'bg-paddy-soft text-paddy' }
+
+/** Farmer / Agent / Supplier tag. */
+function TypeTag({ type }) {
+  const { t } = useT()
+  const k = type || 'FARMER'
+  return <span className={cx('inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium', TYPE_TONE[k])}>{t(`farmers.${k}`)}</span>
+}
+
+function FarmerCard({ f, stats, onEdit, onDelete }) {
+  const { t } = useT()
+  return (
+    <article className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4 shadow-e1">
       <div className="flex items-start gap-3">
-        <FarmerAvatar farmer={f} className="size-12" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{f.name}</p>
-          {f.phone ? (
-            <p className="flex items-center gap-1.5 text-sm text-muted">
-              <span className="v4-num">{f.phone}</span>
-              {f.phoneVerified ? <BadgeCheck className="size-4 text-success" aria-label="Verified" /> : <StatusChip color="warning">Unverified</StatusChip>}
-            </p>
-          ) : <p className="text-sm text-muted">No mobile</p>}
-        </div>
-        <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-          <Button isIconOnly size="sm" variant="ghost" onPress={onEdit} aria-label={`Edit ${f.name}`}><Pencil className="size-4" /></Button>
-          <Button isIconOnly size="sm" variant="ghost" className="text-danger" onPress={onDelete} aria-label={`Delete ${f.name}`}><Trash2 className="size-4" /></Button>
-        </div>
+        <FarmerAvatar farmer={f} className="size-11" />
+        <div className="min-w-0 flex-1"><p className="flex items-center gap-2"><span className="truncate font-semibold">{f.name}</span><TypeTag type={f.type} /></p><p className="text-sm text-muted"><Mobile f={f} /></p></div>
+        <Actions f={f} onEdit={onEdit} onDelete={onDelete} />
       </div>
+      <dl className="grid grid-cols-2 gap-2 text-sm">
+        <div><dt className="text-xs text-muted">{t('farmers.outstanding')}</dt><dd className={cx('v4-num font-semibold', stats?.due > 0 ? 'text-risk' : '')}>{money(stats?.due || 0)}</dd></div>
+        <div><dt className="text-xs text-muted">{t('farmers.lastPurchase')}</dt><dd>{stats?.last ? day(stats.last) : '—'}</dd></div>
+      </dl>
       <div className="grid gap-1.5 text-xs text-muted">
         {f.address && <p className="flex items-start gap-2"><MapPin className="mt-0.5 size-3.5 shrink-0" /><span className="line-clamp-2">{f.address}</span></p>}
-        {f.bankAccount
-          ? <p className="flex items-center gap-2"><Landmark className="size-3.5 shrink-0" /><span className="font-mono">{f.bankAccount}</span> · {f.bankName}</p>
-          : <p className="flex items-center gap-2"><Landmark className="size-3.5 shrink-0" />No bank details</p>}
+        <p className="flex items-center gap-2"><Landmark className="size-3.5 shrink-0" />{f.bankAccount ? <><span className="font-mono">{f.bankAccount}</span> · {f.bankName}</> : 'No bank details'}</p>
       </div>
-    </motion.article>
+    </article>
+  )
+}
+
+const PAGE_SIZE = 20
+const CARDS_PER_PAGE = 24
+
+/** Card view, a page at a time (the list view pages inside DataTable). */
+function FarmerCards({ rows, stats, onEdit, onDelete, empty }) {
+  const paged = usePaged(rows, CARDS_PER_PAGE)
+  return (
+    <div className="grid gap-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {paged.rows.map(f => <FarmerCard key={f.id} f={f} stats={stats.get(f.id)} onEdit={() => onEdit(f)} onDelete={() => onDelete(f)} />)}
+        {rows.length === 0 && <p className="col-span-full py-10 text-center text-sm text-muted">{empty}</p>}
+      </div>
+      <Pager {...paged} className="rounded-card border border-border bg-surface" />
+    </div>
   )
 }
 
@@ -66,11 +108,52 @@ export default function Farmers() {
   const [otpBusy, setOtpBusy] = useState(null)
   const [cooldown, startCooldown] = useCountdown()
 
+  const { t } = useT()
+  const [layout, setLayout] = usePref('farmers.layout', 'list')
+  const [typeFilter, setTypeFilter] = useState('ALL')
   const { data: farmers = [], isLoading } = useQuery({ queryKey: ['farmers'], queryFn: getFarmers })
+  const { data: purchases = [] } = useQuery({ queryKey: ['purchases'], queryFn: getPurchases })
+  // Outstanding dues and last purchase per farmer, so the list answers "who do we owe" without opening anyone.
+  const stats = useMemo(() => {
+    const m = new Map()
+    for (const p of purchases) {
+      const s = m.get(p.farmerId) || { due: 0, last: null, count: 0 }
+      s.due += Number(p.amountDue || 0); s.count += 1
+      if (!s.last || p.purchaseDate > s.last) s.last = p.purchaseDate
+      m.set(p.farmerId, s)
+    }
+    return m
+  }, [purchases])
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return q ? farmers.filter(f => f.name.toLowerCase().includes(q) || (f.phone || '').includes(q)) : farmers
-  }, [farmers, query])
+    return farmers.filter(f => (typeFilter === 'ALL' || (f.type || 'FARMER') === typeFilter)
+      && (!q || f.name.toLowerCase().includes(q) || (f.phone || '').includes(q) || (f.address || '').toLowerCase().includes(q)))
+  }, [farmers, query, typeFilter])
+  const columns = [
+    { key: 'name', header: 'Farmer', sortValue: (f) => f.name.toLowerCase(), cell: (f) => (
+      <span className="flex items-center gap-3"><FarmerAvatar farmer={f} className="size-8" /><span className="min-w-0"><span className="block font-semibold">{f.name}</span>{f.address && <span className="block max-w-64 truncate text-xs text-muted">{f.address}</span>}</span></span>
+    ) },
+    { key: 'type', header: t('farmers.type'), cell: (f) => <TypeTag type={f.type} />, sortValue: (f) => f.type || 'FARMER' },
+    { key: 'phone', header: 'Mobile', cell: (f) => <Mobile f={f} /> },
+    { key: 'count', header: 'Purchases', align: 'right', cell: (f) => <span className="v4-num">{num(stats.get(f.id)?.count || 0, 0)}</span>, sortValue: (f) => stats.get(f.id)?.count || 0 },
+    { key: 'last', header: t('farmers.lastPurchase'), cell: (f) => (stats.get(f.id)?.last ? day(stats.get(f.id).last) : '—'), sortValue: (f) => stats.get(f.id)?.last || '' },
+    { key: 'due', header: t('farmers.outstanding'), align: 'right', sortValue: (f) => stats.get(f.id)?.due || 0,
+      cell: (f) => { const d = stats.get(f.id)?.due || 0; return <span className={cx('v4-num', d > 0 ? 'font-semibold text-risk' : 'text-muted')}>{money(d)}</span> } },
+    { key: 'actions', header: '', align: 'right', cell: (f) => <Actions f={f} onEdit={() => openEdit(f)} onDelete={() => setDeleting(f)} /> },
+  ]
+  const phoneRow = (f) => {
+    const st = stats.get(f.id)
+    return (
+      <div className="flex items-center gap-3">
+        <FarmerAvatar farmer={f} className="size-9" />
+        <div className="grid min-w-0 flex-1 gap-0.5">
+          <div className="flex justify-between gap-2"><span className="flex min-w-0 items-center gap-2"><span className="truncate font-semibold">{f.name}</span><TypeTag type={f.type} /></span>{st?.due > 0 && <span className="v4-num shrink-0 text-sm font-semibold text-risk">{money(st.due)}</span>}</div>
+          <div className="flex justify-between gap-2 text-xs text-muted"><Mobile f={f} /><span>{st?.last ? day(st.last) : ''}</span></div>
+        </div>
+        <Actions f={f} onEdit={() => openEdit(f)} onDelete={() => setDeleting(f)} />
+      </div>
+    )
+  }
 
   // ---- phone / OTP (same rules as the other UIs) ----
   const originalPhone = editing?.farmer?.phone || ''
@@ -154,7 +237,7 @@ export default function Farmers() {
   const openCreate = () => { reset(); setForm(EMPTY); setEditing({}) }
   const openEdit = (f) => {
     reset()
-    setForm({ name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
+    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
     setEditing({ id: f.id, farmer: f })
   }
   const close = () => { setEditing(null); reset() }
@@ -173,31 +256,47 @@ export default function Farmers() {
 
   return (
     <>
-      <PageHeader title="Farmers" description={`${farmers.length} registered · verified mobiles are needed to release payments`}
-        actions={<Button onPress={openCreate}><Plus className="size-4" />Register farmer</Button>} />
+      <PageHeader title={t('farmers.title')} description={`${farmers.length} registered · verified mobiles are needed to release payments`}
+        actions={<Button onPress={openCreate}><Plus className="size-4" />{t('farmers.register')}</Button>} />
 
       {farmers.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm">
-          <SearchField aria-label="Search farmers" value={query} onChange={setQuery}>
-            <SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder="Search by name or mobile" /><SearchField.ClearButton /></SearchField.Group>
+        <div className="flex flex-wrap items-center gap-3">
+          <SearchField aria-label="Search farmers" value={query} onChange={setQuery} className="w-full sm:w-80">
+            <SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder={t('farmers.search')} /><SearchField.ClearButton /></SearchField.Group>
           </SearchField>
-        </motion.div>
+          <div role="group" aria-label="Filter by type" className="flex flex-wrap gap-1.5">
+            {[{ value: 'ALL', key: 'all' }, ...PARTY_TYPES.map(pt => ({ value: pt.value, key: `${pt.value}S` }))].map(o => {
+              const count = o.value === 'ALL' ? farmers.length : farmers.filter(f => (f.type || 'FARMER') === o.value).length
+              return (
+                <button key={o.value} type="button" aria-pressed={typeFilter === o.value} onClick={() => setTypeFilter(o.value)}
+                  className={cx('inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm font-medium', typeFilter === o.value ? 'border-accent bg-accent-soft text-accent-soft-foreground' : 'border-border bg-surface text-muted hover:text-foreground')}>
+                  {t(`farmers.${o.key}`)}<span className="v4-num text-xs opacity-70">{count}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div role="radiogroup" aria-label="Layout" className="ml-auto flex gap-1 rounded-field border border-border bg-surface p-0.5">
+            {[['list', List, 'List'], ['cards', LayoutGrid, 'Cards']].map(([id, Icon, label]) => (
+              <button key={id} type="button" role="radio" aria-checked={layout === id} aria-label={label} onClick={() => setLayout(id)}
+                className={cx('flex items-center gap-1.5 rounded-[5px] px-2.5 py-1 text-sm', layout === id ? 'bg-accent-soft text-accent-soft-foreground' : 'text-muted')}><Icon className="size-4" /><span className="hidden sm:inline">{label}</span></button>
+            ))}
+          </div>
+        </div>
       )}
 
       {isLoading ? <Loading /> : farmers.length === 0 ? (
-        <EmptyState icon={Users} title="No farmers yet" action={<Button className="mt-2" onPress={openCreate}>Register the first farmer</Button>}>
-          Register farmers with a verified mobile number to record purchases and payments.
+        <EmptyState icon={Users} title="No farmers, agents or suppliers yet" action={<Button className="mt-2" onPress={openCreate}>Register the first farmer</Button>}>
+          Register farmers, agents and suppliers with a verified mobile number to record purchases and payments.
         </EmptyState>
+      ) : layout === 'cards' ? (
+        <FarmerCards key={`${typeFilter}|${query}`} rows={shown} stats={stats} onEdit={openEdit} onDelete={setDeleting}
+          empty={query ? `No one matches “${query}”.` : 'None registered as this type yet.'} />
       ) : (
-        <motion.div layout className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {shown.map(f => <FarmerCard key={f.id} f={f} onEdit={() => openEdit(f)} onDelete={() => setDeleting(f)} />)}
-          </AnimatePresence>
-          {shown.length === 0 && <p className="col-span-full py-10 text-center text-sm text-muted">No farmers match “{query}”.</p>}
-        </motion.div>
+        <DataTable key={`${typeFilter}|${query}`} label="Farmers" rows={shown} columns={columns} phoneRow={phoneRow} minWidth={820} pageSize={PAGE_SIZE}
+          empty={query ? `No one matches “${query}”.` : 'None registered as this type yet.'} />
       )}
 
-      <Panel open={!!editing} onClose={close} onSubmit={submit} title={editing?.id ? 'Edit farmer' : 'Register farmer'}
+      <Panel open={!!editing} onClose={close} onSubmit={submit} title={editing?.id ? `Edit ${t(`farmers.${form.type || 'FARMER'}`).toLowerCase()}` : t('farmers.registration')}
         description="A verified mobile number is needed to release payments."
         footer={<><Button variant="tertiary" onPress={close}>Cancel</Button><SubmitButton pending={save.isPending}>Save farmer</SubmitButton></>}>
         {editing && (
@@ -219,6 +318,17 @@ export default function Farmers() {
             </div>
 
             <Section>Identity</Section>
+            <div className="grid gap-1.5">
+              <p id="party-type-label" className="text-sm font-medium">{t('farmers.type')} <span className="text-danger">*</span></p>
+              <div role="radiogroup" aria-labelledby="party-type-label" className="grid grid-cols-3 gap-1 rounded-field border border-border bg-surface-secondary p-1">
+                {PARTY_TYPES.map(pt => (
+                  <button key={pt.value} type="button" role="radio" aria-checked={form.type === pt.value} onClick={() => setField('type', pt.value)}
+                    className={cx('rounded-[5px] px-3 py-1.5 text-sm font-medium', form.type === pt.value ? 'bg-surface text-foreground shadow-e1' : 'text-muted hover:text-foreground')}>
+                    {t(`farmers.${pt.value}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
             <TextInput label="Full name" required maxLength={100} value={form.name} onChange={v => setField('name', v)} error={errors.name} />
 
             <div className="grid gap-2">
@@ -226,7 +336,7 @@ export default function Farmers() {
                 <div className="flex-1">
                   <TextInput label="Mobile number" required prefix="+91" inputMode="tel" maxLength={15} placeholder="10-digit mobile"
                     value={form.phone} onChange={v => setField('phone', v)} error={errors.phone}
-                    suffix={phoneVerified ? <BadgeCheck className="size-4 text-success" aria-label="Mobile verified" /> : null} />
+                    suffix={phoneVerified ? <BadgeCheck className="size-4 text-ok" aria-label="Mobile verified" /> : null} />
                 </div>
                 {phoneChanged && !phoneVerified && !otpPending && (
                   <Button variant="secondary" onPress={sendOtp} isPending={otpBusy === 'send'} className={errors.phone ? 'mb-6' : ''}><Phone className="size-4" />Send OTP</Button>
@@ -235,14 +345,14 @@ export default function Farmers() {
               <AnimatePresence>
                 {otpPending && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                    <div className="rounded-2xl border border-border bg-surface-secondary/50 p-3">
+                    <div className="rounded-card border border-border bg-surface-secondary p-3">
                       <OtpInput sentTo={otp.sentTo} value={otp.code} cooldown={cooldown} resending={otpBusy === 'send'} onResend={sendOtp}
                         onChange={(code) => { setOtp(o => ({ ...o, code })); if (code.length === 6) verifyOtp(code) }} />
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-              {phoneVerified && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-semibold text-success">Mobile number verified</motion.p>}
+              {phoneVerified && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-semibold text-ok">Mobile number verified</motion.p>}
               {!phoneChanged && editing.farmer && <p className="text-xs text-muted">{editing.farmer.phoneVerified ? 'Verified number. ' : ''}Changing the number will require OTP verification.</p>}
               {otpError && <p className="text-xs text-danger" role="alert">{otpError}</p>}
             </div>

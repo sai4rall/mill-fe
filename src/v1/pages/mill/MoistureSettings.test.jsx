@@ -17,13 +17,13 @@ const own = [{ fromPct: 16, toPct: null, deductionPct: 10 }]
 beforeEach(() => vi.clearAllMocks())
 
 describe('Mill admin moisture settings', () => {
-  it('starts from a copy of the global defaults and saves them as the mill override', async () => {
+  it('starts from a copy of the company defaults and saves them as the mill override', async () => {
     api.getMoistureTable.mockResolvedValue({ source: 'GLOBAL', ranges: global, millRanges: [], globalRanges: global })
     api.saveMillMoisture.mockResolvedValue({ source: 'MILL', ranges: global, millRanges: global, globalRanges: global })
     const user = userEvent.setup()
     renderWithProviders(<MoistureSettings />)
 
-    expect(await screen.findByText(/global defaults/)).toBeInTheDocument()
+    expect(await screen.findByText(/company defaults/)).toBeInTheDocument()
     expect(screen.getByLabelText('Range 2 deduction')).toHaveValue('5')
     await user.clear(screen.getByLabelText('Range 2 deduction'))
     await user.type(screen.getByLabelText('Range 2 deduction'), '8')
@@ -35,19 +35,19 @@ describe('Mill admin moisture settings', () => {
     expect(await screen.findByText(/its own ranges/)).toBeInTheDocument()
   })
 
-  it('shows the mill override with the global defaults and can reset to global', async () => {
+  it('shows the mill override with the company defaults and can reset to them', async () => {
     api.getMoistureTable.mockResolvedValue({ source: 'MILL', ranges: own, millRanges: own, globalRanges: global })
     api.resetMillMoisture.mockResolvedValue({ source: 'GLOBAL', ranges: global, millRanges: [], globalRanges: global })
     const user = userEvent.setup()
     renderWithProviders(<MoistureSettings />)
 
     expect(await screen.findByText(/its own ranges/)).toBeInTheDocument()
-    expect(screen.getByText(/Global defaults: 0% – below 15% → 0%, 15% and above → 5%/)).toBeInTheDocument()
+    expect(screen.getByText(/Company defaults: 0% – below 15% → 0%, 15% and above → 5%/)).toBeInTheDocument()
     expect(screen.getByLabelText('Range 1 from')).toHaveValue('16')
 
-    await user.click(screen.getByRole('button', { name: 'Reset to global defaults' }))
+    await user.click(screen.getByRole('button', { name: 'Reset to company defaults' }))
     await waitFor(() => expect(api.resetMillMoisture).toHaveBeenCalled())
-    expect(await screen.findByText(/global defaults/)).toBeInTheDocument()
+    expect(await screen.findByText(/company defaults/)).toBeInTheDocument()
     expect(screen.getByLabelText('Range 1 to')).toHaveValue('15')
   })
 
@@ -67,15 +67,15 @@ describe('Mill admin moisture settings', () => {
   })
 })
 
-describe('Super admin global moisture defaults', () => {
-  it('edits and saves the global table', async () => {
+describe('Super admin company moisture defaults', () => {
+  it('edits and saves the company table', async () => {
     api.getGlobalMoisture.mockResolvedValue(global)
     api.saveGlobalMoisture.mockImplementation(async (r) => r)
     const user = userEvent.setup()
     renderWithProviders(<GlobalMoisture />)
 
     await user.click(await screen.findByRole('button', { name: 'Remove range 1' }))
-    await user.click(screen.getByRole('button', { name: 'Save global ranges' }))
+    await user.click(screen.getByRole('button', { name: 'Save company ranges' }))
     await waitFor(() => expect(api.saveGlobalMoisture).toHaveBeenCalledWith([{ fromPct: 15, toPct: null, deductionPct: 5 }]))
     expect(await screen.findByText('Saved.')).toBeInTheDocument()
   })

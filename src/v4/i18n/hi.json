@@ -1,0 +1,143 @@
+{
+ "nav": {
+  "today": "आज",
+  "procurement": "खरीद",
+  "milling": "मिलिंग",
+  "sales": "बिक्री",
+  "settings": "सेटिंग्स",
+  "purchases": "खरीद",
+  "farmers": "किसान",
+  "money": "भुगतान",
+  "batches": "बैच",
+  "stock": "स्टॉक",
+  "orders": "ऑर्डर",
+  "shipments": "शिपमेंट",
+  "moisture": "नमी",
+  "operators": "ऑपरेटर",
+  "trucks": "ट्रक",
+  "mills": "मिलें",
+  "devConsole": "डेव कंसोल",
+  "more": "और",
+  "record": "दर्ज करें",
+  "allPages": "सभी पेज",
+  "rejected": "अस्वीकृत लॉरी"
+ },
+ "account": {
+  "changePassword": "पासवर्ड बदलें",
+  "classic": "पुराना दृश्य",
+  "logout": "लॉगआउट",
+  "theme": "थीम",
+  "language": "भाषा"
+ },
+ "theme": {
+  "system": "सिस्टम",
+  "light": "लाइट",
+  "dark": "डार्क"
+ },
+ "search": {
+  "placeholder": "खोजें या जाएँ…"
+ },
+ "today": {
+  "title": "आज",
+  "purchases": "{{count}} खरीद · {{qty}}",
+  "noEntries": "आज अभी कोई खरीद दर्ज नहीं हुई।",
+  "entries": "आज की खरीद"
+ },
+ "record": {
+  "title": "खरीद दर्ज करें",
+  "subtitle": "मिल पर तौल। कीमत वज़न, दर और नमी से तय होती है।",
+  "farmer": "किसान / एजेंट / आपूर्तिकर्ता",
+  "searchFarmers": "किसान खोजें…",
+  "noFarmers": "कोई किसान नहीं मिला",
+  "date": "खरीद की तारीख",
+  "truck": "ट्रक नंबर",
+  "truckHint": "GPS ट्रक ट्रैकिंग के लिए",
+  "weight": "वज़न",
+  "rate": "दर",
+  "moisture": "नमी",
+  "notes": "टिप्पणी",
+  "receipt": "रसीद",
+  "gross": "कुल राशि",
+  "deduction": "नमी कटौती ({{pct}}%)",
+  "net": "देय राशि",
+  "noRanges": "नमी की सीमाएँ तय नहीं हैं, इसलिए कोई कटौती नहीं।",
+  "save": "सेव करें",
+  "saveAndAdd": "सेव करें और अगला",
+  "cancel": "रद्द करें",
+  "saved": "खरीद दर्ज हो गई",
+  "queued": "कनेक्शन नहीं है। इस डिवाइस पर सेव हुआ, अपने आप भेजा जाएगा।",
+  "errFarmer": "किसान चुनें",
+  "errDate": "खरीद की तारीख ज़रूरी है",
+  "errWeight": "वज़न दर्ज करें",
+  "errRate": "दर दर्ज करें",
+  "errMoisture": "नमी % दर्ज करें"
+ },
+ "outbox": {
+  "waiting_one": "1 प्रविष्टि भेजनी बाकी",
+  "waiting_other": "{{count}} प्रविष्टियाँ भेजनी बाकी",
+  "retry": "अभी भेजें"
+ },
+ "purchases": {
+  "title": "खरीद",
+  "subtitle": "किसानों से खरीदा धान और किए गए भुगतान",
+  "pay": "{{amount}} भुगतान करें",
+  "due": "बाकी",
+  "empty": "इन फ़िल्टर में कोई खरीद नहीं।"
+ },
+ "filter": {
+  "search": "किसान या ट्रक",
+  "all": "सभी",
+  "today": "आज",
+  "week": "7 दिन",
+  "month": "30 दिन",
+  "pending": "बाकी",
+  "partial": "आंशिक",
+  "paid": "भुगतान हुआ",
+  "clear": "फ़िल्टर हटाएँ",
+  "sort": "क्रम",
+  "newest": "नए पहले",
+  "oldest": "पुराने पहले",
+  "dueHigh": "सबसे ज़्यादा बाकी"
+ },
+ "farmers": {
+  "title": "किसान, एजेंट और आपूर्तिकर्ता",
+  "register": "पंजीकरण करें",
+  "search": "नाम, गाँव या मोबाइल से खोजें",
+  "verified": "सत्यापित",
+  "unverified": "असत्यापित",
+  "outstanding": "बाकी",
+  "lastPurchase": "पिछली खरीद",
+  "registration": "किसान / एजेंट / आपूर्तिकर्ता पंजीकरण",
+  "type": "प्रकार",
+  "all": "सभी",
+  "FARMER": "किसान",
+  "AGENT": "एजेंट",
+  "SUPPLIER": "आपूर्तिकर्ता",
+  "FARMERS": "किसान",
+  "AGENTS": "एजेंट",
+  "SUPPLIERS": "आपूर्तिकर्ता"
+ },
+ "batches": {
+  "title": "बैच",
+  "subtitle": "धान से चावल तक मिल के बैच",
+  "inProgress": "चालू",
+  "completed": "पूरे",
+  "start": "बैच शुरू करें",
+  "complete": "बैच पूरा करें",
+  "paddyIn": "धान",
+  "riceOut": "चावल",
+  "expected": "अनुमान",
+  "conversion": "रूपांतरण"
+ },
+ "status": {
+  "PENDING": "बाकी",
+  "PARTIAL": "आंशिक",
+  "PAID": "भुगतान हुआ",
+  "IN_PROGRESS": "चालू",
+  "COMPLETED": "पूरा",
+  "FULFILLED": "पूरा",
+  "CANCELLED": "रद्द",
+  "ACTIVE": "सक्रिय",
+  "INACTIVE": "निष्क्रिय"
+ }
+}

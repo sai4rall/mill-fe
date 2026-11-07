@@ -19,7 +19,7 @@ describe('v4 Login', () => {
     await u.type(screen.getByLabelText('Username'), ' admin1 ')
     await u.type(screen.getByLabelText('Password'), 'Admin@123')
     await u.click(screen.getByRole('button', { name: /Sign in/ }))
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/v4/dashboard'))
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/v4/today'))
     expect(login).toHaveBeenCalledWith('admin1', 'Admin@123')
   })
 

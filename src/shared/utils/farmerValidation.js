@@ -26,6 +26,7 @@ const collapse = (s = '') => s.trim().replace(/\s+/g, ' ')
 export function normalizeFarmer(form) {
   return {
     name: collapse(form.name),
+    type: form.type || 'FARMER',
     phone: (form.phone || '').trim(),
     address: (form.address || '').trim(),
     bankAccount: (form.bankAccount || '').replace(/\s+/g, ''),

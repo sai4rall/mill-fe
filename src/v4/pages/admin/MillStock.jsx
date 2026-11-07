@@ -13,6 +13,7 @@ import { StockLedger, StockTiles } from '../../kit/Stock'
 import { cx } from '../../lib/format'
 import { rise } from '../../lib/motion'
 import { notify } from '../../lib/toast'
+import { date, num } from '../../lib/numbers'
 import { v4 } from '../../lib/paths'
 
 const RANGES = [{ label: 'Last 2 days', days: 2 }, { label: 'Last 7 days', days: 7 }, { label: 'Last 30 days', days: 30 }]
@@ -27,7 +28,7 @@ function lastDays(days) {
 function Movements({ title, icon: Icon, iconClass, movements = [] }) {
   const sum = (k) => movements.reduce((s, m) => s + (Number(m[k]) || 0), 0).toFixed(2)
   return (
-    <motion.section variants={rise} className="rounded-3xl border border-border bg-surface p-5">
+    <motion.section variants={rise} className="rounded-card border border-border bg-surface p-5">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Icon className={cx('size-5', iconClass)} /><h3 className="font-bold">{title}</h3>
         <Chip size="sm" variant="soft" className="ml-auto">{movements.length} entries</Chip>
@@ -41,10 +42,10 @@ function Movements({ title, icon: Icon, iconClass, movements = [] }) {
               <motion.li key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i, 12) * 0.03 }} className="relative py-2">
                 <span className={cx('absolute top-3.5 -left-[25px] size-2.5 rounded-full ring-4 ring-surface', inbound ? 'bg-success' : 'bg-danger')} />
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <div className="min-w-0"><p className="text-sm font-medium">{m.description}</p><p className="text-xs text-muted">{m.date} · <StatusChip color={inbound ? 'success' : 'danger'}>{m.type.replace('_', ' ')}</StatusChip></p></div>
+                  <div className="min-w-0"><p className="text-sm font-medium">{m.description}</p><p className="text-xs text-muted">{date(m.date)} · <StatusChip color={inbound ? 'success' : 'danger'}>{m.type.replace('_', ' ')}</StatusChip></p></div>
                   <div className="text-right text-sm">
-                    <span className={cx('v4-num font-semibold', inbound ? 'text-success' : 'text-danger')}>{inbound ? '+' : '−'}{Number(inbound ? m.quantityIn : m.quantityOut || 0).toFixed(2)}</span>
-                    <span className={cx('v4-num ml-3 text-xs', Number(m.runningBalance) < 0 ? 'text-danger' : 'text-muted')}>bal {Number(m.runningBalance).toFixed(2)}</span>
+                    <span className={cx('v4-num font-semibold', inbound ? 'text-success' : 'text-danger')}>{inbound ? '+' : '−'}{num(inbound ? m.quantityIn : m.quantityOut || 0)}</span>
+                    <span className={cx('v4-num ml-3 text-xs', Number(m.runningBalance) < 0 ? 'text-danger' : 'text-muted')}>bal {num(m.runningBalance)}</span>
                   </div>
                 </div>
               </motion.li>
@@ -91,7 +92,7 @@ export default function MillStock() {
           {isLoading ? <Loading /> : stock && <><StockTiles stock={stock} /><StockLedger stock={stock} note="Auto-refreshes every 30 s" /></>}
         </Tabs.Panel>
         <Tabs.Panel id="statement" className="grid gap-6 pt-6">
-          <div className="flex flex-wrap items-end gap-3 rounded-3xl border border-border bg-surface p-4">
+          <div className="flex flex-wrap items-end gap-3 rounded-card border border-border bg-surface p-4">
             <div className="flex gap-2">{RANGES.map(r => <Button key={r.days} size="sm" variant="secondary" onPress={() => quick(r.days)}>{r.label}</Button>)}</div>
             <DateInput label="From" className="sm:w-48" value={fromDate} max={toDate || todayISO()} onChange={setFromDate} />
             <DateInput label="To" className="sm:w-48" value={toDate} min={fromDate || undefined} onChange={setToDate} />
@@ -99,8 +100,8 @@ export default function MillStock() {
           </div>
           {stLoading ? <Loading /> : statement && (
             <div className="grid gap-4 xl:grid-cols-2">
-              <Movements title="Paddy" icon={Wheat} iconClass="text-amber-600" movements={statement.paddyMovements} />
-              <Movements title="Rice" icon={Package2} iconClass="text-emerald-600" movements={statement.riceMovements} />
+              <Movements title="Paddy" icon={Wheat} iconClass="text-warn" movements={statement.paddyMovements} />
+              <Movements title="Rice" icon={Package2} iconClass="text-ok" movements={statement.riceMovements} />
             </div>
           )}
         </Tabs.Panel>

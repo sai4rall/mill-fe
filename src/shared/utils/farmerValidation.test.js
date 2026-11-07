@@ -123,7 +123,7 @@ describe('normalizeFarmer', () => {
       name: '  Ramesh   Kumar ', phone: ' 98765 43210 ', address: '  Village\nRoad  ',
       bankAccount: ' 1234 5678 9012 ', bankName: ' State  Bank ', ifscCode: ' sbin 0001234 ',
     })).toEqual({
-      name: 'Ramesh Kumar', phone: '98765 43210', address: 'Village\nRoad',
+      name: 'Ramesh Kumar', type: 'FARMER', phone: '98765 43210', address: 'Village\nRoad',
       bankAccount: '123456789012', bankName: 'State Bank', ifscCode: 'SBIN0001234',
     })
   })

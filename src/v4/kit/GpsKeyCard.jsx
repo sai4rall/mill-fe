@@ -19,9 +19,9 @@ export default function GpsKeyCard() {
     onSuccess: (r) => { setConfirming(false); setNewKey(r.deviceKey); qc.invalidateQueries({ queryKey: ['gps-key'] }) },
   })
   return (
-    <div className="grid gap-3 rounded-2xl border border-border bg-surface-secondary/40 p-4">
+    <div className="grid gap-3 rounded-card border border-border bg-surface-secondary/40 p-4">
       <div className="flex items-center gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-soft-foreground"><KeyRound className="size-4" /></div>
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-field bg-accent-soft text-accent-soft-foreground"><KeyRound className="size-4" /></div>
         <div className="min-w-0"><p className="text-sm font-bold">GPS device key</p><p className="text-xs text-muted">{gpsKeySummary(status)}</p></div>
       </div>
       <Button size="sm" variant="secondary" isPending={rotate.isPending} onPress={() => (status?.configured ? setConfirming(true) : rotate.mutate())}>

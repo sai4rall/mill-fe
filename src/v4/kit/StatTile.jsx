@@ -1,30 +1,44 @@
-import { motion } from 'motion/react'
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { cx } from '../lib/format'
-import { hoverLift, rise } from '../lib/motion'
-import { NumberTicker } from './display'
+import { useIsPhone } from '../lib/useMediaQuery'
+import { Figure } from './display'
 
 const TONES = {
-  amber: 'from-amber-400/20 text-amber-600', blue: 'from-blue-400/20 text-blue-600', emerald: 'from-emerald-400/25 text-emerald-600',
-  violet: 'from-violet-400/20 text-violet-600', teal: 'from-teal-400/20 text-teal-600', cyan: 'from-cyan-400/20 text-cyan-600',
-  orange: 'from-orange-400/20 text-orange-600', rose: 'from-rose-400/20 text-rose-600',
+  paddy: 'bg-paddy-soft text-paddy', rice: 'bg-rice-soft text-rice', ok: 'bg-ok-soft text-ok',
+  risk: 'bg-risk-soft text-risk', warn: 'bg-warn-soft text-warn', neutral: 'bg-surface-secondary text-muted',
 }
+// Older tone names map onto the semantic set.
+const ALIAS = { amber: 'paddy', emerald: 'ok', blue: 'rice', cyan: 'rice', teal: 'ok', violet: 'neutral', orange: 'warn', rose: 'risk' }
 
-/** Bento tile: animated number (or `display` text), icon with a soft tinted glow, lifts on hover. */
-export default function StatTile({ label, value, display, unit = 'Qtl', icon: Icon, tone = 'emerald', decimals = 2, prefix, className, big }) {
+/**
+ * A metric: label, exact figure (never truncated; compact L/Cr on phones with the exact value in the tooltip),
+ * optional unit, icon and change against the previous period. Static: it does not move on hover.
+ */
+export default function StatTile({ label, value, display, unit = 'Qtl', format = 'number', decimals = 2, icon: Icon, tone = 'neutral',
+  delta, hint, className, big, prefix }) {
+  const phone = useIsPhone()
+  const t = TONES[ALIAS[tone] || tone] || TONES.neutral
+  const fmt = prefix === '₹' ? 'money' : format
   return (
-    <motion.div variants={rise} {...hoverLift}
-      className={cx('relative min-w-0 overflow-hidden rounded-3xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5', className)}>
-      <div className={cx('pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-gradient-to-br to-transparent blur-2xl', TONES[tone])} />
-      <div className="relative flex h-full flex-col justify-between gap-4">
-        <div className="flex items-center justify-between gap-2">
-          <p className="min-w-0 text-xs font-medium text-muted sm:text-sm">{label}</p>
-          {Icon && <div className={cx('flex size-9 items-center justify-center rounded-xl bg-surface-secondary', TONES[tone].split(' ')[1])}><Icon className="size-[18px]" /></div>}
-        </div>
-        <p className={cx('truncate font-bold tracking-tight', big ? 'text-2xl sm:text-4xl' : 'text-lg sm:text-2xl')}>
-          {display ?? <NumberTicker value={value} decimals={decimals} prefix={prefix} />}
-          {display == null && unit && <span className="ml-1.5 text-sm font-medium text-muted">{unit}</span>}
-        </p>
+    <div className={cx('min-w-0 rounded-card border border-border bg-surface p-4 shadow-e1', className)}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="min-w-0 text-sm font-medium text-muted">{label}</p>
+        {Icon && <div className={cx('flex size-8 shrink-0 items-center justify-center rounded-field', t)}><Icon className="size-4" /></div>}
       </div>
-    </motion.div>
+      <p className={cx('mt-2 font-bold tracking-tight break-words', big ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl')}>
+        {display ?? <Figure value={value} format={fmt} decimals={fmt === 'count' ? 0 : decimals} compactAbove={phone ? 100000 : undefined} />}
+        {display == null && unit && <span className="ml-1 text-sm font-medium text-muted">{unit}</span>}
+      </p>
+      {(delta != null || hint) && (
+        <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+          {delta != null && Number.isFinite(delta) && (
+            <span className={cx('inline-flex items-center gap-0.5 font-semibold', delta >= 0 ? 'text-ok' : 'text-risk')}>
+              {delta >= 0 ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}{Math.abs(delta).toFixed(0)}%
+            </span>
+          )}
+          {hint}
+        </p>
+      )}
+    </div>
   )
 }

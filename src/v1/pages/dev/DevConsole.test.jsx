@@ -9,7 +9,9 @@ vi.mock('../../../shared/api/dev', () => ({
   getGlobalFlags: vi.fn(), updateGlobalFlag: vi.fn(), getMillFlags: vi.fn(), setMillFlag: vi.fn(),
   getDevMills: vi.fn(), getDevMillLogo: vi.fn(), uploadMillLogo: vi.fn(), deleteMillLogo: vi.fn(),
   getSuperAdmins: vi.fn(), createSuperAdmin: vi.fn(), toggleSuperAdmin: vi.fn(), resetSuperAdminPassword: vi.fn(),
+  setMillStatus: vi.fn(), deleteMill: vi.fn(), assignMillOwner: vi.fn(), deleteSuperAdmin: vi.fn(), getAllUsers: vi.fn(), resetUserPassword: vi.fn(),
 }))
+vi.mock('../../../shared/context/AuthContext', () => ({ useAuth: () => ({ user: { username: 'devadmin', role: 'DEV_ADMIN' } }) }))
 
 const mills = [
   { millId: 1, millName: 'Sri Lakshmi Rice Mill', location: 'Nalgonda', status: 'ACTIVE', logoUpdatedAt: '2026-11-01T10:00:00' },
@@ -105,7 +107,7 @@ describe('Dev Console — feature flags', () => {
 
 describe('Dev Console — mill logos', () => {
   async function openLogos(user) {
-    await user.click(screen.getByRole('tab', { name: /Mill Logos/ }))
+    await user.click(screen.getByRole('tab', { name: /^Mills/ }))
     return screen.findByTestId('mill-logo-1')
   }
 
@@ -219,5 +221,94 @@ describe('Dev Console — super admins', () => {
     await user.click(screen.getByRole('button', { name: 'Reset password for superadmin' }))
     await waitFor(() => expect(dev.resetSuperAdminPassword).toHaveBeenCalledWith(1))
     expect(await screen.findByText(/New password for superadmin/)).toBeInTheDocument()
+  })
+})
+
+describe('Dev Console — mills', () => {
+  async function openMills(user) {
+    await user.click(screen.getByRole('tab', { name: /^Mills/ }))
+    return screen.findByTestId('mill-logo-1')
+  }
+
+  it('deactivates and activates a mill', async () => {
+    dev.setMillStatus.mockResolvedValue({})
+    dev.getDevMills.mockResolvedValue([mills[0], { ...mills[1], status: 'INACTIVE' }])
+    const user = setup()
+    await openMills(user)
+    await user.click(screen.getByRole('button', { name: 'Deactivate Sri Lakshmi Rice Mill' }))
+    await waitFor(() => expect(dev.setMillStatus).toHaveBeenCalledWith(1, 'INACTIVE'))
+    await user.click(screen.getByRole('button', { name: 'Activate Sai Test' }))
+    await waitFor(() => expect(dev.setMillStatus).toHaveBeenCalledWith(2, 'ACTIVE'))
+  })
+
+  it('deletes a mill only after its name is typed', async () => {
+    dev.deleteMill.mockResolvedValue({ users: 2 })
+    const user = setup()
+    await openMills(user)
+    await user.click(screen.getByRole('button', { name: 'Delete Sai Test' }))
+    const confirm = screen.getByRole('button', { name: 'Delete mill permanently' })
+    expect(confirm).toBeDisabled()
+    await user.type(screen.getByLabelText(/Type .Sai Test. to confirm/), 'sai test')
+    expect(confirm).toBeDisabled()
+    await user.clear(screen.getByLabelText(/Type .Sai Test. to confirm/))
+    await user.type(screen.getByLabelText(/Type .Sai Test. to confirm/), 'Sai Test')
+    await user.click(confirm)
+    await waitFor(() => expect(dev.deleteMill).toHaveBeenCalledWith(2, 'Sai Test'))
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete mill permanently' })).toBeNull())
+  })
+})
+
+describe('Dev Console — mill companies', () => {
+  it('shows which company owns each mill and moves a mill to another company', async () => {
+    dev.assignMillOwner.mockResolvedValue({})
+    dev.getDevMills.mockResolvedValue([{ ...mills[0], ownerId: 1, ownerUsername: 'superadmin' }, { ...mills[1], ownerId: null }])
+    const user = setup()
+    await user.click(screen.getByRole('tab', { name: /^Mills/ }))
+    const owned = await screen.findByRole('combobox', { name: 'Company for Sri Lakshmi Rice Mill' })
+    await waitFor(() => expect(owned).toHaveValue('1'))
+    expect(within(screen.getByTestId('mill-logo-2')).getByText(/no super admin can see it/)).toBeInTheDocument()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Company for Sai Test' }), '7')
+    await waitFor(() => expect(dev.assignMillOwner).toHaveBeenCalledWith(2, 7))
+  })
+})
+
+describe('Dev Console — delete super admin', () => {
+  it('asks before deleting', async () => {
+    dev.deleteSuperAdmin.mockResolvedValue({})
+    const user = setup()
+    await user.click(screen.getByRole('tab', { name: /Super Admins/ }))
+    await user.click(await screen.findByRole('button', { name: 'Delete ops_super' }))
+    expect(dev.deleteSuperAdmin).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(dev.deleteSuperAdmin).toHaveBeenCalledWith(7))
+  })
+})
+
+describe('Dev Console — accounts', () => {
+  const accounts = [
+    { id: 8, username: 'devadmin', role: 'DEV_ADMIN', active: true },
+    { id: 1, username: 'superadmin', role: 'SUPER_ADMIN', active: true },
+    { id: 20, username: 'lakshmi_admin', fullName: 'Lakshmi', role: 'MILL_ADMIN', millName: 'Sri Lakshmi Rice Mill', millStatus: 'ACTIVE', active: true },
+    { id: 21, username: 'op_ravi', role: 'MILL_OPERATOR', millName: 'Sai Test', millStatus: 'INACTIVE', active: true },
+  ]
+
+  it('lists every account and resets any password except your own', async () => {
+    dev.getAllUsers.mockResolvedValue(accounts)
+    dev.resetUserPassword.mockResolvedValue({ generatedPassword: 'Op#New9pass' })
+    const user = setup()
+    await user.click(screen.getByRole('tab', { name: /Accounts/ }))
+    const row = (await screen.findByText('op_ravi')).closest('tr')
+    expect(row).toHaveTextContent('Mill operator')
+    expect(row).toHaveTextContent('(inactive)')
+    expect(screen.getByText('devadmin').closest('tr')).toHaveTextContent('You · use Change password')
+    expect(screen.queryByRole('button', { name: 'Reset password for devadmin' })).toBeNull()
+
+    await user.type(screen.getByPlaceholderText('Username, name, mill or role'), 'lakshmi')
+    expect(screen.queryByText('op_ravi')).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Reset password for lakshmi_admin' }))
+    expect(dev.resetUserPassword).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Reset password' }))
+    await waitFor(() => expect(dev.resetUserPassword).toHaveBeenCalledWith(20))
+    expect(await screen.findByText(/New password for lakshmi_admin/)).toBeInTheDocument()
   })
 })

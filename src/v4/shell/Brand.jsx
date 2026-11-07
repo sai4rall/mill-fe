@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'motion/react'
 import { getBranding, getMillLogo } from '../../shared/api/mill'
 import { useObjectUrl } from '../../shared/utils/useObjectUrl'
 import { BrandMark } from './nav'
@@ -14,12 +13,11 @@ export default function Brand({ isMillUser, compact }) {
   return (
     <div className="flex min-w-0 items-center gap-2.5">
       {logoUrl
-        ? <img src={logoUrl} alt={`${title} logo`} className="size-9 shrink-0 rounded-xl object-contain" />
+        ? <img src={logoUrl} alt={`${title} logo`} className="size-9 shrink-0 rounded-field object-contain" />
         : (
-          <motion.div aria-label="Mill System" whileHover={{ rotate: -8, scale: 1.05 }}
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-700 text-white shadow-lg shadow-emerald-600/25">
+          <div aria-label="Mill System" className="flex size-9 shrink-0 items-center justify-center rounded-field bg-accent text-accent-foreground">
             <BrandMark className="size-5" />
-          </motion.div>
+          </div>
         )}
       {!compact && <span className="truncate font-bold tracking-tight">{title}</span>}
     </div>

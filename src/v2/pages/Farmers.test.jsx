@@ -78,7 +78,7 @@ describe('v2 Farmers', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Save farmer' }))
     await waitFor(() => expect(api.createFarmer).toHaveBeenCalledTimes(1))
     expect(api.createFarmer.mock.calls[0][0]).toEqual({
-      name: 'Venkat Rao', phone: '9876533333', address: '', bankAccount: '', bankName: '', ifscCode: '', phoneVerificationToken: 'tok-1',
+      name: 'Venkat Rao', type: 'FARMER', phone: '9876533333', address: '', bankAccount: '', bankName: '', ifscCode: '', phoneVerificationToken: 'tok-1',
     })
     expect(await screen.findByText('Farmer registered')).toBeInTheDocument()
   })

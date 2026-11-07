@@ -1,6 +1,7 @@
 import { BarChart3, Factory, Package2, TrendingDown, TrendingUp, Wheat } from 'lucide-react'
 import { motion } from 'motion/react'
-import { cx, ledgerRows, qtl } from '../lib/format'
+import { cx, ledgerRows } from '../lib/format'
+import { num } from '../lib/numbers'
 import { rise } from '../lib/motion'
 import StatTile from './StatTile'
 
@@ -24,7 +25,7 @@ export function StockTiles({ stock }) {
 /** Ledger as a vertical list of rows (keeps working on phones without sideways scrolling). */
 export function StockLedger({ stock, note }) {
   return (
-    <motion.div variants={rise} className="overflow-hidden rounded-3xl border border-border bg-surface">
+    <motion.div variants={rise} className="overflow-hidden rounded-card border border-border bg-surface">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h3 className="font-bold">Stock ledger</h3>
         {note && <span className="text-xs text-muted">{note}</span>}
@@ -33,7 +34,7 @@ export function StockLedger({ stock, note }) {
         {ledgerRows(stock).map(r => (
           <li key={r.label} className={cx('flex items-center justify-between gap-4 px-5 py-3.5', r.bold && 'bg-accent-soft/50')}>
             <div className="min-w-0"><p className={cx('text-sm', r.bold ? 'font-bold' : 'font-medium')}>{r.label}</p><p className="text-xs text-muted">{r.desc}</p></div>
-            <span className={cx('v4-num shrink-0 text-right', r.bold ? 'text-lg font-bold' : 'font-semibold')}>{qtl(r.value)} <span className="text-xs font-medium text-muted">Qtl</span></span>
+            <span className={cx('v4-num shrink-0 text-right', r.bold ? 'text-lg font-bold' : 'font-semibold')}>{num(r.value)} <span className="text-xs font-medium text-muted">Qtl</span></span>
           </li>
         ))}
       </ul>

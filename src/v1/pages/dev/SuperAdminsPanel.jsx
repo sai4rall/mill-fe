@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, RefreshCw } from 'lucide-react'
-import { getSuperAdmins, createSuperAdmin, toggleSuperAdmin, resetSuperAdminPassword } from '../../../shared/api/dev'
+import { Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { getSuperAdmins, createSuperAdmin, toggleSuperAdmin, resetSuperAdminPassword, deleteSuperAdmin } from '../../../shared/api/dev'
 import Modal from '../../components/Modal'
 import PasswordReveal from '../../components/PasswordReveal'
 import { errorMessage } from './errorMessage'
@@ -24,7 +24,13 @@ export default function SuperAdminsPanel() {
         message: `Password for ${created.username} — save it now, it will not be shown again.` })
     },
   })
+  const [deleting, setDeleting] = useState(null)
   const toggle = useMutation({ mutationFn: (id) => toggleSuperAdmin(id), onSuccess: refresh })
+  const del = useMutation({
+    mutationFn: (a) => deleteSuperAdmin(a.id),
+    onSuccess: () => { setDeleting(null); refresh(); qc.invalidateQueries({ queryKey: ['dev-users'] }) },
+    onError: () => setDeleting(null),
+  })
   const reset = useMutation({
     mutationFn: ({ id }) => resetSuperAdminPassword(id),
     onSuccess: ({ generatedPassword }, { username }) =>
@@ -41,7 +47,7 @@ export default function SuperAdminsPanel() {
     create.mutate({ username: form.username.trim(), fullName: form.fullName.trim() || null })
   }
 
-  const actionError = toggle.error || reset.error
+  const actionError = toggle.error || reset.error || del.error
   const inputCls = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400'
 
   return (
@@ -85,6 +91,10 @@ export default function SuperAdminsPanel() {
                         className="flex items-center gap-1 text-sm border border-slate-300 px-3 py-1 rounded-lg hover:bg-slate-50 disabled:opacity-50">
                         <RefreshCw className="w-3.5 h-3.5" /> Reset password
                       </button>
+                      <button onClick={() => setDeleting(a)} aria-label={`Delete ${a.username}`}
+                        className="flex items-center gap-1 text-sm border border-red-200 text-red-600 px-3 py-1 rounded-lg hover:bg-red-50">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -121,6 +131,17 @@ export default function SuperAdminsPanel() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {deleting && (
+        <Modal title={`Delete ${deleting.username}?`} onClose={() => setDeleting(null)}>
+          <p className="text-sm text-slate-600 mb-4">The account (company) is removed permanently and its sessions stop working. A super admin who still owns mills cannot be deleted: delete or reassign those mills first. To block access temporarily, use Disable instead.</p>
+          <div className="flex gap-3">
+            <button type="button" onClick={() => setDeleting(null)} className="flex-1 border border-slate-300 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={() => del.mutate(deleting)} disabled={del.isPending}
+              className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-60">{del.isPending ? 'Deleting...' : 'Delete'}</button>
+          </div>
         </Modal>
       )}
 

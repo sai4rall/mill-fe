@@ -7,8 +7,8 @@ import { createCustomer, createOrder, createShipment, getCustomers, getOrders, g
 import { todayISO } from '../../shared/utils/dates'
 import { EmptyState, ErrorAlert, Loading, PageHeader, Section, StatusChip } from '../kit/display'
 import { ComboInput, DateInput, TextAreaInput, TextInput } from '../kit/fields'
-import { Dialog, Panel, SubmitButton } from '../kit/overlays'
-import { hoverLift, rise } from '../lib/motion'
+import { Panel, SubmitButton } from '../kit/overlays'
+import { date, num, qty } from '../lib/numbers'
 import { notify } from '../lib/toast'
 
 const EMPTY_ORDER = { customerId: '', orderDate: '', riceType: '', quantityQuintals: '', pricePerQuintal: '', notes: '' }
@@ -22,7 +22,7 @@ function Ring({ pct }) {
   return (
     <svg viewBox="0 0 64 64" className="size-16 -rotate-90" aria-label={`${Math.round(pct)}% shipped`}>
       <circle cx="32" cy="32" r={r} fill="none" strokeWidth="7" className="stroke-surface-secondary" />
-      <motion.circle cx="32" cy="32" r={r} fill="none" strokeWidth="7" strokeLinecap="round" className="stroke-emerald-500"
+      <motion.circle cx="32" cy="32" r={r} fill="none" strokeWidth="7" strokeLinecap="round" className="stroke-ok"
         strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - pct / 100) }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} />
     </svg>
   )
@@ -70,26 +70,26 @@ export default function ExportOrders({ title = 'Export Orders' }) {
               const pct = o.quantityQuintals ? Math.min(100, (Number(o.shippedQuintals || 0) / Number(o.quantityQuintals)) * 100) : 0
               const shippable = o.status !== 'FULFILLED' && o.status !== 'CANCELLED'
               return (
-                <motion.article key={o.id} variants={rise} {...hoverLift} className="flex flex-col gap-4 rounded-3xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <article key={o.id} className="flex flex-col gap-4 rounded-card border border-border bg-surface p-5 shadow-e1">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0"><p className="truncate font-bold">{o.customerName}</p><p className="text-xs text-muted">{o.orderDate}{o.riceType ? ` · ${o.riceType}` : ''}</p></div>
+                    <div className="min-w-0"><p className="truncate font-bold">{o.customerName}</p><p className="text-xs text-muted">{date(o.orderDate)}{o.riceType ? ` · ${o.riceType}` : ''}</p></div>
                     <StatusChip status={o.status} />
                   </div>
                   <div className="flex items-center gap-4">
                     <Ring pct={pct} />
                     <div className="grid gap-0.5 text-sm">
-                      <p><span className="v4-num font-bold">{o.shippedQuintals}</span><span className="text-muted"> / {o.quantityQuintals} Qtl shipped</span></p>
-                      <p className="text-warning"><span className="v4-num font-semibold">{o.remainingQuintals}</span> Qtl remaining</p>
+                      <p><span className="v4-num font-bold">{num(o.shippedQuintals)}</span><span className="text-muted"> / {qty(o.quantityQuintals)} shipped</span></p>
+                      <p className="text-warn"><span className="v4-num font-semibold">{qty(o.remainingQuintals)}</span> remaining</p>
                     </div>
                   </div>
                   {shippable && <Button variant="secondary" className="mt-auto" onPress={() => { shipM.reset(); setErrs({}); setShipFor(o.id) }} aria-label={`Ship ${o.customerName}`}><Truck className="size-4" />Record shipment</Button>}
-                </motion.article>
+                </article>
               )
             })}
           </div>
         )}
 
-      <Dialog open={!!orderForm} onClose={() => setOrderForm(null)} title="New export order" icon={<Package className="size-5" />} size="sm:max-w-xl"
+      <Panel open={!!orderForm} onClose={() => setOrderForm(null)} title="New export order" width="sm:w-[34rem]"
         onSubmit={(e) => {
           e.preventDefault()
           const found = {}
@@ -114,9 +114,9 @@ export default function ExportOrders({ title = 'Export Orders' }) {
             <ErrorAlert error={createOrderM.error} />
           </>
         )}
-      </Dialog>
+      </Panel>
 
-      <Dialog open={!!customerForm} onClose={() => setCustomerForm(null)} title="Add customer" icon={<UserPlus className="size-5" />} size="sm:max-w-xl"
+      <Panel open={!!customerForm} onClose={() => setCustomerForm(null)} title="Add customer" width="sm:w-[34rem]"
         onSubmit={(e) => { e.preventDefault(); if (!customerForm.name.trim()) { setErrs({ name: 'Name is required' }); return } createCustomerM.mutate(customerForm) }}
         footer={<><Button variant="tertiary" onPress={() => setCustomerForm(null)}>Cancel</Button><SubmitButton pending={createCustomerM.isPending}>Save</SubmitButton></>}>
         {customerForm && (
@@ -131,7 +131,7 @@ export default function ExportOrders({ title = 'Export Orders' }) {
             <ErrorAlert error={createCustomerM.error} />
           </>
         )}
-      </Dialog>
+      </Panel>
 
       <Panel open={!!shipOrder} onClose={() => setShipFor(null)} title={shipOrder ? `Ship — ${shipOrder.customerName}` : ''} width="sm:w-[28rem]"
         description={shipOrder ? `${shipOrder.remainingQuintals} Qtl remaining on this order` : ''}
@@ -147,9 +147,9 @@ export default function ExportOrders({ title = 'Export Orders' }) {
               <div className="grid gap-2">
                 <p className="text-sm font-semibold">Previous shipments</p>
                 {shipments.map(s => (
-                  <div key={s.id} className="flex justify-between rounded-xl border border-border px-3 py-2 text-sm">
-                    <span className="font-semibold">{s.quintalsExported} Qtl <span className="font-normal text-muted">{s.vehicleNumber}</span></span>
-                    <span className="text-xs text-muted">{s.shipmentDate}</span>
+                  <div key={s.id} className="flex justify-between rounded-field border border-border px-3 py-2 text-sm">
+                    <span className="font-semibold">{qty(s.quintalsExported)} <span className="font-normal text-muted">{s.vehicleNumber}</span></span>
+                    <span className="text-xs text-muted">{date(s.shipmentDate)}</span>
                   </div>
                 ))}
               </div>

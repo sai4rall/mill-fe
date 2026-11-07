@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { ToggleRight, Image, ShieldCheck } from 'lucide-react'
+import { ToggleRight, Building2, ShieldCheck, Users } from 'lucide-react'
 import FeatureFlagsPanel from './FeatureFlagsPanel'
 import MillLogosPanel from './MillLogosPanel'
 import SuperAdminsPanel from './SuperAdminsPanel'
+import AccountsPanel from './AccountsPanel'
 
 const TABS = [
   { id: 'flags', label: 'Feature Flags', icon: ToggleRight, Panel: FeatureFlagsPanel },
-  { id: 'logos', label: 'Mill Logos', icon: Image, Panel: MillLogosPanel },
+  { id: 'logos', label: 'Mills', icon: Building2, Panel: MillLogosPanel },
   { id: 'supers', label: 'Super Admins', icon: ShieldCheck, Panel: SuperAdminsPanel },
+  { id: 'accounts', label: 'Accounts', icon: Users, Panel: AccountsPanel },
 ]
 
 export default function DevConsole() {

@@ -58,14 +58,16 @@ export function SubmitButton({ pending, children, ...rest }) {
   return <Button type="submit" isPending={pending} {...rest}>{pending && <Loader2 className="size-4 animate-spin" />}{children}</Button>
 }
 
-export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', danger, loading, onConfirm, onClose }) {
+/** Confirmation (the one place dialogs are used). `children` adds content such as a type-to-confirm field. */
+export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', danger, loading, confirmDisabled, onConfirm, onClose, children }) {
   return (
     <Dialog open={open} onClose={onClose} title={title} size="sm:max-w-md"
       footer={<>
         <Button variant="tertiary" onPress={onClose}>Cancel</Button>
-        <Button variant={danger ? 'danger' : 'primary'} isPending={loading} onPress={onConfirm}>{confirmLabel}</Button>
+        <Button variant={danger ? 'danger' : 'primary'} isPending={loading} isDisabled={confirmDisabled} onPress={onConfirm}>{confirmLabel}</Button>
       </>}>
       {message && <p className="text-sm text-muted">{message}</p>}
+      {children}
     </Dialog>
   )
 }

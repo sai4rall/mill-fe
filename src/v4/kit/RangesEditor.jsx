@@ -25,7 +25,7 @@ export default function RangesEditor({ initial, onSave, saving, serverError, sav
 
   return (
     <div className="grid gap-4">
-      <div className="overflow-hidden rounded-3xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-card border border-border bg-surface">
         <div className="grid grid-cols-[1fr_1fr_1fr_44px] gap-3 border-b border-border bg-surface-secondary/60 px-4 py-2.5 text-xs font-semibold tracking-wide text-muted uppercase">
           <span>From %</span><span>Below %</span><span>Deduction %</span><span />
         </div>

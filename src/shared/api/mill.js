@@ -62,3 +62,10 @@ export const getAllShipments = () => api.get('/shipments').then(r => r.data)
 // GPS device key (mill admin): devices send it as the X-Device-Key header.
 export const getGpsKeyStatus = () => api.get('/mill/gps-key').then(r => r.data)
 export const rotateGpsKey = () => api.post('/mill/gps-key/rotate').then(r => r.data)
+export const getAllPayments = () => api.get('/payments').then(r => r.data)
+
+// Rejected lorries (paddy turned away at the mill; no effect on stock or payments).
+export const getRejectedLorries = () => api.get('/rejected-lorries').then(r => r.data)
+export const createRejectedLorry = (data) => api.post('/rejected-lorries', data).then(r => r.data)
+export const updateRejectedLorry = (id, data) => api.put(`/rejected-lorries/${id}`, data).then(r => r.data)
+export const deleteRejectedLorry = (id) => api.delete(`/rejected-lorries/${id}`)

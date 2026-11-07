@@ -11,7 +11,7 @@ vi.mock('../../shared/api/features', () => ({ getFeatures: vi.fn() }))
 vi.mock('./MillBrand', () => ({ default: () => <div>brand</div> }))
 
 const ALL_KEYS = ['dashboard', 'farmers', 'purchases', 'mill_operations', 'export_orders', 'shipments', 'truck_tracking', 'stock_report', 'operators', 'moisture_deduction']
-const ALL_LABELS = ['Dashboard', 'Farmers', 'Purchases', 'Mill Operations', 'Export Orders', 'Shipments', 'Truck Tracking', 'Stock Report', 'Moisture Deductions', 'Operators']
+const ALL_LABELS = ['Dashboard', 'Farmers', 'Purchases', 'Rejected Lorries', 'Mill Operations', 'Export Orders', 'Shipments', 'Truck Tracking', 'Stock Report', 'Moisture Deductions', 'Operators']
 const flags = (overrides = {}) =>
   ALL_KEYS.map(key => ({ key, name: key, showInMenu: true, enabled: true, ...overrides[key] }))
 

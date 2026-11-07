@@ -6,7 +6,7 @@ import { createOperator, getOperators, resetOperatorPassword, toggleOperatorStat
 import DataTable from '../kit/DataTable'
 import { EmptyState, ErrorAlert, Loading, PageHeader, StatusChip } from '../kit/display'
 import { TextInput } from '../kit/fields'
-import { Dialog, SubmitButton } from '../kit/overlays'
+import { Panel, SubmitButton } from '../kit/overlays'
 import PasswordReveal from '../kit/PasswordReveal'
 import { errorMessage } from '../lib/format'
 import { notify } from '../lib/toast'
@@ -58,7 +58,7 @@ export default function Operators() {
         ? <EmptyState icon={UserCog} title="No operators yet">Add an operator so your team can record purchases and batches.</EmptyState>
         : <DataTable label="Operators" rows={operators} columns={columns} minWidth={560} />}
 
-      <Dialog open={!!form} onClose={() => setForm(null)} title="Add operator" description="A password is generated and shown once." icon={<UserCog className="size-5" />} size="sm:max-w-md"
+      <Panel open={!!form} onClose={() => setForm(null)} title="Add operator" description="A password is generated and shown once." width="sm:w-[28rem]"
         onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}
         footer={<><Button variant="tertiary" onPress={() => setForm(null)}>Cancel</Button><SubmitButton pending={create.isPending}>Create operator</SubmitButton></>}>
         {form && (
@@ -68,7 +68,7 @@ export default function Operators() {
             <ErrorAlert error={create.error} />
           </>
         )}
-      </Dialog>
+      </Panel>
       <PasswordReveal open={!!reveal} onClose={() => setReveal(null)} {...(reveal || {})} />
     </>
   )

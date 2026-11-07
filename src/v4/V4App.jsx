@@ -1,6 +1,6 @@
 import '@fontsource-variable/plus-jakarta-sans'
 import './v4.css'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Toast } from '@heroui/react'
 import { MotionConfig } from 'motion/react'
 import { Navigate, Route, Routes } from 'react-router-dom'
@@ -9,22 +9,27 @@ import AppLayout from './shell/AppLayout'
 import FeatureGate from './kit/FeatureGate'
 import { Loading } from './kit/display'
 import { v4, v4HomeFor } from './lib/paths'
+import { useApplyTheme } from './lib/theme'
+import { CHUNKS } from './shell/routes'
+import './i18n'
 
-const Login = lazy(() => import('./pages/Login'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Farmers = lazy(() => import('./pages/Farmers'))
-const Purchases = lazy(() => import('./pages/Purchases'))
-const MillOperations = lazy(() => import('./pages/MillOperations'))
-const ExportOrders = lazy(() => import('./pages/ExportOrders'))
-const TruckTracking = lazy(() => import('./pages/TruckTracking'))
-const StockReport = lazy(() => import('./pages/StockReport'))
-const Shipments = lazy(() => import('./pages/Shipments'))
-const MoistureSettings = lazy(() => import('./pages/MoistureSettings'))
-const Operators = lazy(() => import('./pages/Operators'))
-const Mills = lazy(() => import('./pages/admin/Mills'))
-const MillStock = lazy(() => import('./pages/admin/MillStock'))
-const GlobalMoisture = lazy(() => import('./pages/admin/GlobalMoisture'))
-const DevConsole = lazy(() => import('./pages/dev/DevConsole'))
+const Login = lazy(CHUNKS.login)
+const Today = lazy(CHUNKS.today)
+const Farmers = lazy(CHUNKS.farmers)
+const Purchases = lazy(CHUNKS.purchases)
+const Money = lazy(CHUNKS.money)
+const RejectedLorries = lazy(CHUNKS.rejected)
+const MillOperations = lazy(CHUNKS.batches)
+const ExportOrders = lazy(CHUNKS.orders)
+const TruckTracking = lazy(CHUNKS.truckTracking)
+const StockReport = lazy(CHUNKS.stock)
+const Shipments = lazy(CHUNKS.shipments)
+const MoistureSettings = lazy(CHUNKS.moisture)
+const Operators = lazy(CHUNKS.operators)
+const Mills = lazy(CHUNKS.mills)
+const MillStock = lazy(CHUNKS.millStock)
+const GlobalMoisture = lazy(CHUNKS.globalMoisture)
+const DevConsole = lazy(CHUNKS.dev)
 
 const MILL = ['MILL_ADMIN', 'MILL_OPERATOR']
 const ADMIN = ['MILL_ADMIN']
@@ -45,7 +50,17 @@ function Home() {
 }
 
 /** Motion + toasts for v4 screens; also used by tests. Animations honour the OS "reduce motion" setting. */
+/** Registers the service worker (offline shell + install) in production builds. */
+function useServiceWorker() {
+  useEffect(() => {
+    if (!import.meta.env.PROD) return
+    import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true })).catch(() => {})
+  }, [])
+}
+
 export function V4Providers({ children }) {
+  useApplyTheme()
+  useServiceWorker()
   return (
     <MotionConfig reducedMotion="user">
       {children}
@@ -62,10 +77,14 @@ export default function V4App() {
         <Routes>
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
-          <Route path="dashboard" element={<Guard roles={MILL} feature="dashboard" name="Dashboard"><Dashboard /></Guard>} />
+          <Route path="today" element={<Guard roles={MILL} feature="dashboard" name="Today"><Today /></Guard>} />
+          <Route path="dashboard" element={<Navigate to={v4('/today')} replace />} />
           <Route path="farmers" element={<Guard roles={MILL} feature="farmers" name="Farmers"><Farmers /></Guard>} />
           <Route path="purchases" element={<Guard roles={MILL} feature="purchases" name="Purchases"><Purchases /></Guard>} />
-          <Route path="mill-ops" element={<Guard roles={MILL} feature="mill_operations" name="Mill Operations"><MillOperations /></Guard>} />
+          <Route path="rejected-lorries" element={<Guard roles={MILL} feature="purchases" name="Rejected lorries"><RejectedLorries /></Guard>} />
+          <Route path="money" element={<Guard roles={ADMIN} feature="purchases" name="Money"><Money /></Guard>} />
+          <Route path="batches" element={<Guard roles={MILL} feature="mill_operations" name="Batches"><MillOperations /></Guard>} />
+          <Route path="mill-ops" element={<Navigate to={v4('/batches')} replace />} />
           <Route path="orders" element={<Guard roles={MILL} feature="export_orders" name="Export Orders"><ExportOrders /></Guard>} />
           <Route path="shipments" element={<Guard roles={MILL} feature="shipments" name="Shipments"><Shipments /></Guard>} />
           <Route path="stock" element={<Guard roles={MILL} feature="stock_report" name="Stock Report"><StockReport /></Guard>} />

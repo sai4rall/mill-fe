@@ -10,7 +10,7 @@ describe('v4 paths', () => {
   it('sends each role to its home', () => {
     expect(v4HomeFor('DEV_ADMIN')).toBe('/v4/dev')
     expect(v4HomeFor('SUPER_ADMIN')).toBe('/v4/admin')
-    expect(v4HomeFor('MILL_ADMIN')).toBe('/v4/dashboard')
-    expect(v4HomeFor('MILL_OPERATOR')).toBe('/v4/dashboard')
+    expect(v4HomeFor('MILL_ADMIN')).toBe('/v4/today')
+    expect(v4HomeFor('MILL_OPERATOR')).toBe('/v4/today')
   })
 })

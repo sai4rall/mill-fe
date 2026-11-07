@@ -55,3 +55,10 @@ export const resetOperatorPassword = (id) => api.post(`/mill/operators/${id}/res
 export const getBranding = () => api.get('/mill/branding').then(r => r.data || null)
 export const getMillLogo = (version) =>
   api.get('/mill/logo', { params: { v: version }, responseType: 'blob' }).then(r => r.data)
+
+// All shipments of the mill (Shipments page).
+export const getAllShipments = () => api.get('/shipments').then(r => r.data)
+
+// GPS device key (mill admin): devices send it as the X-Device-Key header.
+export const getGpsKeyStatus = () => api.get('/mill/gps-key').then(r => r.data)
+export const rotateGpsKey = () => api.post('/mill/gps-key/rotate').then(r => r.data)

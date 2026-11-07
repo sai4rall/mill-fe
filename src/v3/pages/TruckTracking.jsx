@@ -18,6 +18,7 @@ import EmptyState from '../components/EmptyState'
 import Field from '../components/Field'
 import SelectField from '../components/SelectField'
 import StatCard from '../components/StatCard'
+import GpsKeyCard from '../components/GpsKeyCard'
 
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow })
 const DEFAULT_CENTER = [17.385, 78.4867]
@@ -50,6 +51,7 @@ export default function TruckTracking() {
     <div className="grid gap-6">
       <PageHeader title="Truck Tracking" description="Live GPS paths for paddy delivery trucks"
         actions={<Badge variant="outline" className="gap-2 border-emerald-200 bg-emerald-50 py-1 text-emerald-700"><span className="size-2 animate-pulse rounded-full bg-emerald-500" />Live · refreshes every 15 s</Badge>} />
+      <GpsKeyCard />
       <Card className="flex-row flex-wrap items-end gap-4 p-4">
         <Field id="t-truck" label="Truck" className="w-full sm:w-52">
           <SelectField id="t-truck" options={trucks.map(t => ({ value: t, label: t }))} value={active} onChange={setSelected} placeholder={trucks.length ? 'Select truck' : 'No trucks yet'} disabled={!trucks.length} />

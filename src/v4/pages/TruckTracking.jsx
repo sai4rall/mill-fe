@@ -14,6 +14,7 @@ import { todayISO } from '../../shared/utils/dates'
 import { EmptyState, PageHeader } from '../kit/display'
 import { DateInput, SelectInput } from '../kit/fields'
 import StatTile from '../kit/StatTile'
+import GpsKeyCard from '../kit/GpsKeyCard'
 import { rise } from '../lib/motion'
 
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow })
@@ -54,6 +55,7 @@ export default function TruckTracking() {
           <DateInput label="From" value={fromDate} max={toDate || todayISO()} onChange={setFromDate} />
           <DateInput label="To" value={toDate} min={fromDate || undefined} onChange={setToDate} />
           {(fromDate || toDate) && <Button variant="ghost" onPress={() => { setFromDate(''); setToDate('') }}>Clear dates</Button>}
+          <GpsKeyCard />
           {latest && (
             <div className="grid gap-3 pt-2">
               <StatTile icon={Truck} tone="emerald" label="Truck" display={active} />

@@ -87,6 +87,7 @@ export default function Login() {
           <Button type="submit" size="lg" fullWidth isPending={loading} className="group">
             Sign in<ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </Button>
+          <p className="text-center text-xs text-muted">Prefer the old look? <a href="/login" className="font-semibold text-accent hover:underline">Use the classic view</a></p>
         </motion.form>
       </div>
     </div>

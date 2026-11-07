@@ -15,7 +15,7 @@ export const STOCK_TILES = [
 
 export function StockTiles({ stock }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
       {STOCK_TILES.map(t => <StatTile key={t.key} label={t.label} value={stock?.[t.key]} icon={t.icon} tone={t.tone} />)}
     </div>
   )

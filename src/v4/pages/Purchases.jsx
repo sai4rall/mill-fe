@@ -74,8 +74,8 @@ export default function Purchases() {
       <PageHeader title="Purchases" description="Paddy bought from farmers and payments released"
         actions={<Button onPress={() => { create.reset(); setErrs({}); setForm({ ...EMPTY, purchaseDate: todayISO() }) }}><Plus className="size-4" />Record purchase</Button>} />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Purchases" value={purchases.length} decimals={0} unit="" icon={ShoppingCart} tone="emerald" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <StatTile className="col-span-2 sm:col-span-1" label="Purchases" value={purchases.length} decimals={0} unit="" icon={ShoppingCart} tone="emerald" />
         <StatTile label="Total value" value={totals.value} prefix="₹" unit="" icon={IndianRupee} tone="violet" />
         <StatTile label="Outstanding" value={totals.due} prefix="₹" unit="" icon={IndianRupee} tone="rose" />
       </div>

@@ -12,6 +12,7 @@ import { getTruckNumbers, getTruckPath } from '../../shared/api/mill'
 import PageHeader from '../components/PageHeader'
 import EmptyState from '../components/EmptyState'
 import { todayISO } from '../../shared/utils/dates'
+import GpsKeyCard from '../components/GpsKeyCard'
 
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow })
 const DEFAULT_CENTER = [17.385, 78.4867]
@@ -55,6 +56,7 @@ export default function TruckTracking() {
     <Stack gap="lg">
       <PageHeader title="Truck Tracking" description="Live GPS paths for paddy delivery trucks"
         actions={<Badge size="lg" variant="dot" color="leaf">Live · refreshes every 15 s</Badge>} />
+      <GpsKeyCard />
       <Card padding="md">
         <Group align="flex-end" gap="md" wrap="wrap">
           <Select label="Truck" data={trucks} value={active || null} onChange={setSelected} placeholder={trucks.length ? 'Select truck' : 'No trucks yet'}

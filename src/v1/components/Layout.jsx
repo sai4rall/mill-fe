@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../shared/context/AuthContext'
 import { useFeatures } from '../../shared/features/useFeatures'
@@ -140,7 +140,7 @@ export default function Layout({ children }) {
           </button>
           <MillBrand isMillUser={isMillUser} />
         </header>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"><Suspense fallback={<div className="py-10 text-center text-sm text-slate-400">Loading…</div>}>{children}</Suspense></main>
       </div>
     </div>
   )

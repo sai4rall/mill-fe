@@ -27,3 +27,13 @@ if (!Element.prototype.hasPointerCapture) {
 }
 // Calendar popovers (v3/v4) probe the element under the pointer; jsdom has no layout.
 if (!document.elementFromPoint) document.elementFromPoint = () => null
+// Motion's useInView (v4 number counters) needs IntersectionObserver; report every element as visible.
+if (!window.IntersectionObserver) {
+  window.IntersectionObserver = class {
+    constructor(cb) { this.cb = cb }
+    observe(el) { this.cb([{ isIntersecting: true, target: el, intersectionRatio: 1 }], this) }
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return [] }
+  }
+}

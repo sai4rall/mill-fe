@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react'
-import { login as apiLogin } from '../api/auth'
+import { login as apiLogin, logout as apiLogout } from '../api/auth'
+import { clearSession } from '../api/client'
 
 const AuthContext = createContext(null)
 
@@ -19,9 +20,12 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => refreshSession(await apiLogin({ username, password }))
 
+  // Signs out here at once and revokes the token on the server in the background (so a copied token stops working).
   const logout = () => {
-    localStorage.clear()
+    const token = localStorage.getItem('token')
+    clearSession()
     setUser(null)
+    if (token) apiLogout(token).catch(() => {})
   }
 
   return (

@@ -18,6 +18,7 @@ const MillOperations = lazy(() => import('./pages/MillOperations'))
 const ExportOrders = lazy(() => import('./pages/ExportOrders'))
 const TruckTracking = lazy(() => import('./pages/TruckTracking'))
 const StockReport = lazy(() => import('./pages/StockReport'))
+const Shipments = lazy(() => import('./pages/Shipments'))
 const MoistureSettings = lazy(() => import('./pages/MoistureSettings'))
 const Operators = lazy(() => import('./pages/Operators'))
 const Mills = lazy(() => import('./pages/admin/Mills'))
@@ -66,7 +67,7 @@ export default function V4App() {
           <Route path="purchases" element={<Guard roles={MILL} feature="purchases" name="Purchases"><Purchases /></Guard>} />
           <Route path="mill-ops" element={<Guard roles={MILL} feature="mill_operations" name="Mill Operations"><MillOperations /></Guard>} />
           <Route path="orders" element={<Guard roles={MILL} feature="export_orders" name="Export Orders"><ExportOrders /></Guard>} />
-          <Route path="shipments" element={<Guard roles={MILL} feature="shipments" name="Shipments"><ExportOrders title="Shipments" /></Guard>} />
+          <Route path="shipments" element={<Guard roles={MILL} feature="shipments" name="Shipments"><Shipments /></Guard>} />
           <Route path="stock" element={<Guard roles={MILL} feature="stock_report" name="Stock Report"><StockReport /></Guard>} />
           <Route path="truck-tracking" element={<Guard roles={ADMIN} feature="truck_tracking" name="Truck Tracking"><TruckTracking /></Guard>} />
           <Route path="moisture" element={<Guard roles={ADMIN} feature="moisture_deduction" name="Moisture Deduction"><MoistureSettings /></Guard>} />

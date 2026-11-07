@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Avatar, Button, Chip, Dropdown, Label } from '@heroui/react'
-import { KeyRound, LogOut, Search } from 'lucide-react'
+import { KeyRound, LogOut, MonitorSmartphone, Search } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../shared/context/AuthContext'
@@ -8,7 +8,7 @@ import { useFeatures } from '../../shared/features/useFeatures'
 import ChangePasswordDialog from '../kit/ChangePasswordDialog'
 import { cx } from '../lib/format'
 import { page, stagger } from '../lib/motion'
-import { v4 } from '../lib/paths'
+import { goClassic, v4 } from '../lib/paths'
 import Brand from './Brand'
 import CommandPalette from './CommandPalette'
 import MobileNav from './MobileNav'
@@ -72,8 +72,9 @@ export default function AppLayout({ children }) {
             </Button>
             <Dropdown.Popover placement="bottom end" className="min-w-56">
               <div className="border-b border-border px-3 py-2.5"><p className="text-sm font-semibold">{name}</p><p className="text-xs text-muted">{user?.role?.replaceAll('_', ' ')}</p></div>
-              <Dropdown.Menu onAction={(key) => (key === 'password' ? setPwOpen(true) : handleLogout())}>
+              <Dropdown.Menu onAction={(key) => (key === 'password' ? setPwOpen(true) : key === 'classic' ? goClassic() : handleLogout())}>
                 <Dropdown.Item id="password" textValue="Change password"><KeyRound className="size-4" /><Label>Change password</Label></Dropdown.Item>
+                <Dropdown.Item id="classic" textValue="Classic view"><MonitorSmartphone className="size-4" /><Label>Classic view</Label></Dropdown.Item>
                 <Dropdown.Item id="logout" textValue="Logout" variant="danger"><LogOut className="size-4" /><Label>Logout</Label></Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown.Popover>

@@ -10,7 +10,8 @@ import {
   createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
-import { normalizeFarmer, serverFieldErrors, validateFarmer } from '../../shared/utils/farmerValidation'
+import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded } from '../../shared/utils/farmerValidation'
+import { phoneInput } from '../../shared/utils/phone'
 import PageHeader from '../components/PageHeader'
 import TableCard from '../components/TableCard'
 import EmptyState from '../components/EmptyState'
@@ -19,7 +20,7 @@ import OtpEntry from '../components/OtpEntry'
 import { errorMessage } from '../../shared/utils/errors'
 import { useCountdown } from '../../shared/hooks/useCountdown'
 
-const EMPTY = { name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
+const EMPTY = { name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '', confirmBankAccount: '' }
 const EMPTY_PHOTO = { file: null, preview: null, removed: false }
 const EMPTY_OTP = { sentTo: '', code: '', token: '', verifiedPhone: '' }
 
@@ -56,7 +57,7 @@ export default function Farmers() {
     const next = { ...form, [key]: value }
     setForm(next)
     if (key === 'phone') setOtpError('')
-    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone) }))
+    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone), originalBankAccount: editing?.farmer?.bankAccount }))
   }
 
   const sendOtp = async () => {
@@ -125,7 +126,7 @@ export default function Farmers() {
   const openCreate = () => { reset(); setForm(EMPTY); setEditing({}) }
   const openEdit = (f) => {
     reset()
-    setForm({ name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
+    setForm({ name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '', confirmBankAccount: '' })
     setEditing({ id: f.id, farmer: f })
   }
   const close = () => { setEditing(null); reset() }
@@ -133,7 +134,7 @@ export default function Farmers() {
   const submit = (e) => {
     e.preventDefault()
     setSubmitted(true)
-    const found = validateFarmer(form, { requirePhone: phoneChanged })
+    const found = validateFarmer(form, { requirePhone: phoneChanged, originalBankAccount: editing?.farmer?.bankAccount })
     setErrors(found)
     if (!canSave) setOtpError('Please verify the mobile number with OTP before saving')
     if (Object.keys(found).length || !canSave) return
@@ -224,10 +225,10 @@ export default function Farmers() {
 
             <Stack gap="xs">
               <Group align="flex-end" gap="sm" wrap="nowrap">
-                <TextInput label="Mobile number" withAsterisk style={{ flex: 1 }} inputMode="tel" maxLength={15} placeholder="10-digit mobile"
+                <TextInput label="Mobile number" withAsterisk style={{ flex: 1 }} inputMode="numeric" placeholder="10-digit mobile"
                   leftSection={<Text size="sm" c="dimmed">+91</Text>} leftSectionWidth={44} value={form.phone} error={errors.phone}
                   rightSection={phoneVerified ? <BadgeCheck size={18} color="var(--mantine-color-leaf-6)" /> : null}
-                  onChange={e => setField('phone', e.target.value)} />
+                  onChange={e => setField('phone', phoneInput(e.target.value))} />
                 {phoneChanged && !phoneVerified && !otpPending && (
                   <Button variant="light" onClick={sendOtp} loading={otpBusy === 'send'} leftSection={<Phone size={14} />}
                     mb={errors.phone ? 22 : 0}>Send OTP</Button>
@@ -251,6 +252,10 @@ export default function Farmers() {
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
               <TextInput label="Bank account no." inputMode="numeric" maxLength={24} value={form.bankAccount} error={errors.bankAccount}
                 onChange={e => setField('bankAccount', e.target.value)} />
+              {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && (
+                <TextInput label="Confirm bank account no." inputMode="numeric" maxLength={24} autoComplete="off" value={form.confirmBankAccount}
+                  error={errors.confirmBankAccount} onPaste={e => e.preventDefault()} onChange={e => setField('confirmBankAccount', e.target.value)} />
+              )}
               <TextInput label="IFSC code" maxLength={11} placeholder="e.g. SBIN0001234" value={form.ifscCode} error={errors.ifscCode}
                 onChange={e => setField('ifscCode', e.target.value.toUpperCase())} />
             </SimpleGrid>

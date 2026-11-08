@@ -6,6 +6,7 @@ const valid = {
   phone: '9876543210',
   address: '12-3, Main Road, Nalgonda',
   bankAccount: '123456789012',
+  confirmBankAccount: '123456789012',
   bankName: 'State Bank of India',
   ifscCode: 'SBIN0001234',
 }
@@ -132,5 +133,22 @@ describe('normalizeFarmer', () => {
 describe('serverFieldErrors', () => {
   it('maps bankDetailsComplete to bankDetails and keeps other fields', () => {
     expect(serverFieldErrors({ name: 'bad', bankDetailsComplete: 'together' })).toEqual({ name: 'bad', bankDetails: 'together' })
+  })
+})
+
+describe('bank account confirmation', () => {
+  const base = { name: 'Ramesh', phone: '9876543210', address: '', bankAccount: '1234 5678 9012', bankName: 'State Bank', ifscCode: 'SBIN0001234' }
+  it('asks for the account number again when one is entered', () => {
+    expect(validateFarmer(base).confirmBankAccount).toBe('Re-enter the bank account number to confirm it')
+    expect(validateFarmer({ ...base, confirmBankAccount: '123456789013' }).confirmBankAccount).toBe('Bank account numbers do not match')
+    expect(validateFarmer({ ...base, confirmBankAccount: '123456789012' })).toEqual({})
+  })
+  it('does not ask again for an unchanged account when editing, or when there is no account', () => {
+    expect(validateFarmer(base, { originalBankAccount: '123456789012' })).toEqual({})
+    expect(validateFarmer({ ...base, bankAccount: '', bankName: '', ifscCode: '' }).confirmBankAccount).toBeUndefined()
+    expect(validateFarmer(base, { originalBankAccount: '999999999999' }).confirmBankAccount).toBeTruthy()
+  })
+  it('is never sent to the server', () => {
+    expect(normalizeFarmer({ ...base, confirmBankAccount: '123456789012' })).not.toHaveProperty('confirmBankAccount')
   })
 })

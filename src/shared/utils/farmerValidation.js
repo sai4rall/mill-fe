@@ -13,6 +13,8 @@ export const MESSAGES = {
   bankNameChars: "Bank name can contain only letters, spaces and . & ( ) ' -",
   ifsc: 'IFSC code must be 11 characters, e.g. SBIN0001234',
   bankDetails: 'Bank account number, bank name and IFSC code must be provided together',
+  bankConfirmRequired: 'Re-enter the bank account number to confirm it',
+  bankConfirmMismatch: 'Bank account numbers do not match',
 }
 
 const NAME_RE = /^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u
@@ -38,8 +40,10 @@ export function normalizeFarmer(form) {
 /**
  * Returns { field: message } for every invalid field (empty object when valid).
  * `requirePhone` is false when editing a farmer whose number was not changed (legacy numbers are kept as-is).
+ * `originalBankAccount` (when editing) means an unchanged account number needs no confirmation; a new or changed
+ * one must be typed again in `confirmBankAccount`.
  */
-export function validateFarmer(form, { requirePhone = true } = {}) {
+export function validateFarmer(form, { requirePhone = true, originalBankAccount } = {}) {
   const f = normalizeFarmer(form)
   const errors = {}
 
@@ -63,10 +67,22 @@ export function validateFarmer(form, { requirePhone = true } = {}) {
 
   if (f.ifscCode && !IFSC_RE.test(f.ifscCode)) errors.ifscCode = MESSAGES.ifsc
 
+  if (bankConfirmNeeded(form, originalBankAccount)) {
+    const confirm = (form.confirmBankAccount || '').replace(/\s+/g, '')
+    if (!confirm) errors.confirmBankAccount = MESSAGES.bankConfirmRequired
+    else if (confirm !== f.bankAccount) errors.confirmBankAccount = MESSAGES.bankConfirmMismatch
+  }
+
   const filled = [f.bankAccount, f.bankName, f.ifscCode].filter(Boolean).length
   if (filled !== 0 && filled !== 3) errors.bankDetails = MESSAGES.bankDetails
 
   return errors
+}
+
+/** True when a bank account number is entered that differs from the saved one, so it must be confirmed. */
+export function bankConfirmNeeded(form, originalBankAccount = '') {
+  const account = (form.bankAccount || '').replace(/\s+/g, '')
+  return !!account && account !== (originalBankAccount || '').replace(/\s+/g, '')
 }
 
 /** Maps the backend's `fields` error object onto form field keys. */

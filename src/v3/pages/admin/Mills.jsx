@@ -16,13 +16,11 @@ import StatusBadge from '../../components/StatusBadge'
 import Loading from '../../components/Loading'
 import { errorMessage } from '../../lib/format'
 import { notify } from '../../lib/toast'
+import { MILL_FIELDS, millPayload, validateMill } from '../../../shared/utils/millValidation'
+import { phoneInput } from '../../../shared/utils/phone'
 import { v3 } from '../../lib/paths'
 
 const EMPTY = { name: '', location: '', contactPhone: '', contactEmail: '', adminUsername: '', adminFullName: '' }
-const FIELDS = [
-  ['name', 'Mill name', true], ['location', 'Location'], ['contactPhone', 'Contact phone'], ['contactEmail', 'Contact email'],
-  ['adminUsername', 'Admin username', true], ['adminFullName', 'Admin full name'],
-]
 const QTY = { amber: 'bg-amber-50 text-amber-700', blue: 'bg-blue-50 text-blue-700', emerald: 'bg-emerald-50 text-emerald-700' }
 
 function Qty({ label, value, tone }) {
@@ -39,6 +37,7 @@ export default function Mills() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [form, setForm] = useState(null)
+  const [errs, setErrs] = useState({})
   const [reveal, setReveal] = useState(null)
   const { data: mills = [], isLoading } = useQuery({ queryKey: ['mills'], queryFn: getMills })
   const stocks = useQueries({ queries: mills.map(m => ({ queryKey: ['mill-stock', m.id], queryFn: () => getMillStock(m.id), staleTime: 30000 })) })
@@ -57,7 +56,7 @@ export default function Mills() {
   return (
     <div className="grid gap-6">
       <PageHeader title="Mills" description="All rice mills on the platform"
-        actions={<Button onClick={() => { create.reset(); setForm({ ...EMPTY }) }}><Plus />Add mill</Button>} />
+        actions={<Button onClick={() => { create.reset(); setErrs({}); setForm({ ...EMPTY }) }}><Plus />Add mill</Button>} />
       {isLoading ? <Loading /> : mills.length === 0 ? (
         <EmptyState icon={Building2} title="No mills yet">Add the first mill; its admin login is created for you.</EmptyState>
       ) : (
@@ -100,12 +99,14 @@ export default function Mills() {
       <Dialog open={!!form} onOpenChange={(o) => !o && setForm(null)}>
         <DialogContent className="sm:max-w-xl">
           {form && (
-            <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}>
+            <form className="grid gap-4" noValidate onSubmit={(e) => { e.preventDefault(); const found = validateMill(form); setErrs(found); if (!Object.keys(found).length) create.mutate(millPayload(form)) }}>
               <DialogHeader><DialogTitle>Add mill</DialogTitle><DialogDescription>The mill admin's password is generated and shown once.</DialogDescription></DialogHeader>
               <div className="grid gap-4 sm:grid-cols-2">
-                {FIELDS.map(([key, label, req]) => (
-                  <Field key={key} id={`m-${key}`} label={label} required={!!req}>
-                    <Input id={`m-${key}`} required={!!req} value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                {MILL_FIELDS.map(({ key, label, required, phone, type }) => (
+                  <Field key={key} id={`m-${key}`} label={label} required={!!required} error={errs[key] || create.error?.response?.data?.fields?.[key]}>
+                    <Input id={`m-${key}`} type={type || 'text'} value={form[key]} aria-invalid={!!(errs[key] || create.error?.response?.data?.fields?.[key]) || undefined}
+                      inputMode={phone ? 'numeric' : undefined} placeholder={phone ? '10-digit mobile' : undefined}
+                      onChange={e => { const v = phone ? phoneInput(e.target.value) : e.target.value; setForm(f => ({ ...f, [key]: v })); setErrs(x => ({ ...x, [key]: undefined })) }} />
                   </Field>
                 ))}
               </div>

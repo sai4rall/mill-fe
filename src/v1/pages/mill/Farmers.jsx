@@ -7,12 +7,13 @@ import {
 import Modal from '../../components/Modal'
 import FarmerAvatar from '../../components/FarmerAvatar'
 import { resizeImage, normalizePhone } from '../../../shared/utils/image'
-import { validateFarmer, normalizeFarmer, serverFieldErrors } from '../../../shared/utils/farmerValidation'
+import { validateFarmer, bankConfirmNeeded, normalizeFarmer, serverFieldErrors } from '../../../shared/utils/farmerValidation'
+import { phoneInput } from '../../../shared/utils/phone'
 import { PARTY_TYPES, partyTypeLabel } from '../../../shared/utils/partyTypes'
 import { Plus, Pencil, Trash2, User, Camera, BadgeCheck, AlertCircle } from 'lucide-react'
 
 const PAGE_SIZE = 20
-const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
+const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '', confirmBankAccount: '' }
 const EMPTY_PHOTO = { file: null, preview: null, removed: false }
 const EMPTY_OTP = { sentTo: '', code: '', token: '', verifiedPhone: '', cooldown: 0 }
 
@@ -92,7 +93,7 @@ export default function Farmers() {
   const openCreate = () => { resetDialog(); setForm(EMPTY); setModal({}) }
   const openEdit = (f) => {
     resetDialog()
-    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
+    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '', confirmBankAccount: '' })
     setModal({ id: f.id, farmer: f })
   }
   const closeModal = () => { setModal(null); resetDialog() }
@@ -110,7 +111,7 @@ export default function Farmers() {
     const next = { ...form, [key]: value }
     setForm(next)
     if (key === 'phone') setOtpError('')
-    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone) }))
+    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone), originalBankAccount: modal?.farmer?.bankAccount }))
   }
   const phoneChangedFor = (value) =>
     !modal?.id || (value.trim() !== originalPhone && normalizePhone(value) !== originalPhone)
@@ -164,7 +165,7 @@ export default function Farmers() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setSubmitted(true)
-    const found = validateFarmer(form, { requirePhone: phoneChanged })
+    const found = validateFarmer(form, { requirePhone: phoneChanged, originalBankAccount: modal?.farmer?.bankAccount })
     setErrors(found)
     if (!canSave) setOtpError('Please verify the mobile number with OTP before saving')
     if (Object.keys(found).length || !canSave) return
@@ -338,9 +339,9 @@ export default function Farmers() {
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">+91</span>
-                  <input id="farmer-phone" value={form.phone} inputMode="tel" maxLength={15}
+                  <input id="farmer-phone" value={form.phone} inputMode="numeric"
                     aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'phone-error' : undefined}
-                    onChange={e => setField('phone', e.target.value)}
+                    onChange={e => setField('phone', phoneInput(e.target.value))}
                     className={`${inputCls} pl-11 ${errors.phone ? errCls : ''}`} placeholder="10-digit mobile" />
                 </div>
                 {phoneChanged && !phoneVerified && (
@@ -381,6 +382,7 @@ export default function Farmers() {
             <fieldset className="space-y-4">
               <legend className="text-xs text-slate-400 mb-2">Bank details (optional — fill all three or leave all empty)</legend>
               {renderField({ key: 'bankAccount', label: 'Bank Account No.', inputMode: 'numeric', maxLength: 24 })}
+              {(!modal?.id || bankConfirmNeeded(form, modal?.farmer?.bankAccount)) && renderField({ key: 'confirmBankAccount', label: 'Confirm Bank Account No.', inputMode: 'numeric', maxLength: 24, autoComplete: 'off', onPaste: e => e.preventDefault() })}
               {renderField({ key: 'bankName', label: 'Bank Name', maxLength: 100 })}
               {renderField({ key: 'ifscCode', label: 'IFSC Code', upper: true, maxLength: 11, placeholder: 'e.g. SBIN0001234' })}
               <FieldError name="bankDetails" errors={errors} />

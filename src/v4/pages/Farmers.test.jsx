@@ -139,3 +139,12 @@ describe('v4 Farmers — pagination', () => {
     expect(screen.getByText('1–24 of 45')).toBeInTheDocument()
   })
 })
+
+describe('v4 Farmers — confirm bank account', () => {
+  it('shows the confirm field on a new registration', async () => {
+    const u = userEvent.setup()
+    renderV4(<Farmers />)
+    const panel = await openRegister(u)
+    expect(within(panel).getByLabelText('Confirm bank account no.')).toBeInTheDocument()
+  })
+})

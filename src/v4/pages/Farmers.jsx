@@ -7,7 +7,8 @@ import {
   createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, getPurchases, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
-import { normalizeFarmer, serverFieldErrors, validateFarmer } from '../../shared/utils/farmerValidation'
+import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded } from '../../shared/utils/farmerValidation'
+import { phoneInput } from '../../shared/utils/phone'
 import { EmptyState, ErrorAlert, FarmerAvatar, Loading, PageHeader, Section, StatusChip } from '../kit/display'
 import { TextAreaInput, TextInput } from '../kit/fields'
 import { ConfirmDialog, Panel, SubmitButton } from '../kit/overlays'
@@ -21,7 +22,7 @@ import { PARTY_TYPES } from '../../shared/utils/partyTypes'
 import { Pager, usePaged } from '../kit/Pager'
 import { notify } from '../lib/toast'
 
-const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '' }
+const EMPTY = { type: 'FARMER', name: '', phone: '', address: '', bankAccount: '', bankName: '', ifscCode: '', confirmBankAccount: '' }
 const EMPTY_PHOTO = { file: null, preview: null, removed: false }
 const EMPTY_OTP = { sentTo: '', code: '', token: '', verifiedPhone: '' }
 
@@ -168,7 +169,7 @@ export default function Farmers() {
     const next = { ...form, [key]: value }
     setForm(next)
     if (key === 'phone') setOtpError('')
-    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone) }))
+    if (submitted) setErrors(validateFarmer(next, { requirePhone: phoneChangedFor(next.phone), originalBankAccount: editing?.farmer?.bankAccount }))
   }
 
   const sendOtp = async () => {
@@ -237,7 +238,7 @@ export default function Farmers() {
   const openCreate = () => { reset(); setForm(EMPTY); setEditing({}) }
   const openEdit = (f) => {
     reset()
-    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '' })
+    setForm({ type: f.type || 'FARMER', name: f.name, phone: f.phone || '', address: f.address || '', bankAccount: f.bankAccount || '', bankName: f.bankName || '', ifscCode: f.ifscCode || '', confirmBankAccount: '' })
     setEditing({ id: f.id, farmer: f })
   }
   const close = () => { setEditing(null); reset() }
@@ -245,7 +246,7 @@ export default function Farmers() {
   const submit = (e) => {
     e.preventDefault()
     setSubmitted(true)
-    const found = validateFarmer(form, { requirePhone: phoneChanged })
+    const found = validateFarmer(form, { requirePhone: phoneChanged, originalBankAccount: editing?.farmer?.bankAccount })
     setErrors(found)
     if (!canSave) setOtpError('Please verify the mobile number with OTP before saving')
     if (Object.keys(found).length || !canSave) return
@@ -334,8 +335,8 @@ export default function Farmers() {
             <div className="grid gap-2">
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <TextInput label="Mobile number" required prefix="+91" inputMode="tel" maxLength={15} placeholder="10-digit mobile"
-                    value={form.phone} onChange={v => setField('phone', v)} error={errors.phone}
+                  <TextInput label="Mobile number" required prefix="+91" inputMode="numeric" placeholder="10-digit mobile"
+                    value={form.phone} onChange={v => setField('phone', phoneInput(v))} error={errors.phone}
                     suffix={phoneVerified ? <BadgeCheck className="size-4 text-ok" aria-label="Mobile verified" /> : null} />
                 </div>
                 {phoneChanged && !phoneVerified && !otpPending && (
@@ -362,6 +363,10 @@ export default function Farmers() {
             <Section>Bank details · all three or none</Section>
             <div className="grid gap-4 sm:grid-cols-2">
               <TextInput label="Bank account no." inputMode="numeric" maxLength={24} value={form.bankAccount} onChange={v => setField('bankAccount', v)} error={errors.bankAccount} />
+              {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && (
+                <TextInput label="Confirm bank account no." inputMode="numeric" maxLength={24} autoComplete="off" value={form.confirmBankAccount}
+                  onPaste={e => e.preventDefault()} onChange={v => setField('confirmBankAccount', v)} error={errors.confirmBankAccount} />
+              )}
               <TextInput label="IFSC code" maxLength={11} placeholder="e.g. SBIN0001234" value={form.ifscCode} onChange={v => setField('ifscCode', v.toUpperCase())} error={errors.ifscCode} />
             </div>
             <TextInput label="Bank name" maxLength={100} value={form.bankName} onChange={v => setField('bankName', v)} error={errors.bankName} />

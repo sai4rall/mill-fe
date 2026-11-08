@@ -5,6 +5,8 @@ import { getMills, createMill, toggleMillStatus, resetMillPassword, getMillStock
 import Modal from '../../components/Modal'
 import StatusBadge from '../../components/StatusBadge'
 import PasswordReveal from '../../components/PasswordReveal'
+import { MILL_FIELDS, millPayload, validateMill } from '../../../shared/utils/millValidation'
+import { phoneInput } from '../../../shared/utils/phone'
 import { Plus, RefreshCw, Building2, Phone, Mail, MapPin, Wheat, Package2, ChevronRight } from 'lucide-react'
 
 function StockChip({ label, value, color }) {
@@ -29,6 +31,7 @@ export default function AdminDashboard() {
   const [createdCreds, setCreatedCreds] = useState(null)
   const [resetResult, setResetResult] = useState(null)
   const [form, setForm] = useState({ name: '', location: '', contactPhone: '', contactEmail: '', adminUsername: '', adminFullName: '' })
+  const [millErrors, setMillErrors] = useState({})
 
   const { data: mills = [], isLoading } = useQuery({ queryKey: ['mills'], queryFn: getMills })
 
@@ -61,7 +64,13 @@ export default function AdminDashboard() {
     onSuccess: (data) => setResetResult(data)
   })
 
-  const handleSubmit = (e) => { e.preventDefault(); createMutation.mutate(form) }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const found = validateMill(form)
+    setMillErrors(found)
+    if (!Object.keys(found).length) createMutation.mutate(millPayload(form))
+  }
+  const fieldError = (key) => millErrors[key] || createMutation.error?.response?.data?.fields?.[key]
 
   return (
     <div>
@@ -70,7 +79,7 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-slate-800">Mills Management</h1>
           <p className="text-slate-500 mt-1">Manage all rice mills in the system</p>
         </div>
-        <button onClick={() => setShowCreate(true)}
+        <button onClick={() => { setMillErrors({}); createMutation.reset(); setShowCreate(true) }}
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm">
           <Plus className="w-4 h-4" /> Add Mill
         </button>
@@ -167,25 +176,19 @@ export default function AdminDashboard() {
 
       {showCreate && (
         <Modal title="Add New Mill" onClose={() => setShowCreate(false)}>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {[
-              { key: 'name', label: 'Mill Name', required: true },
-              { key: 'location', label: 'Location' },
-              { key: 'contactPhone', label: 'Contact Phone' },
-              { key: 'contactEmail', label: 'Contact Email' },
-              { key: 'adminUsername', label: 'Admin Username', required: true },
-              { key: 'adminFullName', label: 'Admin Full Name' },
-            ].map(({ key, label, required }) => (
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {MILL_FIELDS.map(({ key, label, required, phone, type }) => (
               <div key={key}>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{label}{required && ' *'}</label>
-                <input
-                  value={form[key]} required={required}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                <label htmlFor={`mill-${key}`} className="block text-sm font-medium text-slate-700 mb-1">{label}{required && ' *'}</label>
+                <input id={`mill-${key}`} type={type || 'text'} value={form[key]} aria-invalid={!!fieldError(key)}
+                  inputMode={phone ? 'numeric' : undefined} placeholder={phone ? '10-digit mobile' : undefined}
+                  onChange={e => { const v = phone ? phoneInput(e.target.value) : e.target.value; setForm(f => ({ ...f, [key]: v })); setMillErrors(x => ({ ...x, [key]: undefined })) }}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 ${fieldError(key) ? 'border-red-400' : 'border-slate-300'}`}
                 />
+                {fieldError(key) && <p role="alert" className="text-xs text-red-600 mt-1">{fieldError(key)}</p>}
               </div>
             ))}
-            {createMutation.error && (
+            {createMutation.error && !createMutation.error.response?.data?.fields && (
               <p className="text-red-600 text-sm">{createMutation.error.response?.data?.error || 'Failed to create mill'}</p>
             )}
             <div className="flex gap-3 pt-2">

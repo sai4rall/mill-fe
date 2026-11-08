@@ -149,3 +149,17 @@ describe('v4 Farmers — confirm bank account', () => {
     expect(within(panel).getByLabelText('Confirm bank account no.')).not.toHaveAttribute('type', 'password')
   })
 })
+
+describe('v4 Farmers — bank account digits only', () => {
+  it('drops letters and symbols from both bank account fields', async () => {
+    const u = userEvent.setup()
+    renderV4(<Farmers />)
+    const panel = await openRegister(u)
+    const account = within(panel).getByLabelText('Bank account no.')
+    await u.type(account, '12ab34-56 78')
+    expect(account).toHaveValue('12345678')
+    const confirm = within(panel).getByLabelText('Confirm bank account no.')
+    await u.type(confirm, 'x9y8')
+    expect(confirm).toHaveValue('98')
+  })
+})

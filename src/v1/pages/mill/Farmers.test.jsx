@@ -370,3 +370,18 @@ describe('Farmer registration — confirm bank account', () => {
     expect(api.createFarmer).not.toHaveBeenCalled()
   })
 })
+
+describe('Farmer registration — bank account digits only', () => {
+  it('drops letters and symbols from both bank account fields', async () => {
+    const user = renderPage()
+    await openAddDialog(user)
+    await user.type(field('Bank Account No.'), '12ab34-56 78x90')
+    expect(field('Bank Account No.')).toHaveValue('1234567890')
+    await user.type(field('Confirm Bank Account No.'), 'A1B2C3')
+    expect(field('Confirm Bank Account No.')).toHaveValue('123')
+    await user.clear(field('Bank Account No.'))
+    await user.click(field('Bank Account No.'))
+    await user.paste('1234 5678 9012 3456 7890')
+    expect(field('Bank Account No.')).toHaveValue('123456789012345678')
+  })
+})

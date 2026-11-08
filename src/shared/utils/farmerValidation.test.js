@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validateFarmer, normalizeFarmer, serverFieldErrors, MESSAGES } from './farmerValidation'
+import { validateFarmer, normalizeFarmer, serverFieldErrors, MESSAGES, bankAccountInput } from './farmerValidation'
 
 const valid = {
   name: 'Ramesh Kumar',
@@ -150,5 +150,14 @@ describe('bank account confirmation', () => {
   })
   it('is never sent to the server', () => {
     expect(normalizeFarmer({ ...base, confirmBankAccount: '123456789012' })).not.toHaveProperty('confirmBankAccount')
+  })
+})
+
+describe('bankAccountInput', () => {
+  it('keeps digits only, at most 18', () => {
+    expect(bankAccountInput('12ab34-56 78')).toBe('12345678')
+    expect(bankAccountInput('1234 5678 9012')).toBe('123456789012')
+    expect(bankAccountInput('1234567890123456789999')).toBe('123456789012345678')
+    expect(bankAccountInput('abc')).toBe('')
   })
 })

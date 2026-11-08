@@ -12,7 +12,7 @@ import {
   createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
-import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded } from '../../shared/utils/farmerValidation'
+import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded, bankAccountInput } from '../../shared/utils/farmerValidation'
 import { phoneInput } from '../../shared/utils/phone'
 import PageHeader from '../components/PageHeader'
 import DataTable from '../components/DataTable'
@@ -160,7 +160,7 @@ export default function Farmers() {
 
   const input = (key, label, props = {}) => (
     <Field id={`f-${key}`} label={label} required={props.required} error={errors[key]} hint={props.hint}>
-      <Input id={`f-${key}`} value={form[key]} aria-invalid={!!errors[key] || undefined} onChange={e => setField(key, props.upper ? e.target.value.toUpperCase() : e.target.value)}
+      <Input id={`f-${key}`} value={form[key]} aria-invalid={!!errors[key] || undefined} onChange={e => setField(key, props.digits ? bankAccountInput(e.target.value) : props.upper ? e.target.value.toUpperCase() : e.target.value)}
         maxLength={props.maxLength} inputMode={props.inputMode} placeholder={props.placeholder}
         type={props.masked ? 'password' : 'text'}
         onPaste={props.noPaste ? (e) => e.preventDefault() : undefined} autoComplete={props.masked ? 'new-password' : props.noPaste ? 'off' : undefined} />
@@ -282,8 +282,8 @@ export default function Farmers() {
 
                 <Section>Bank details · all three or none</Section>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {input('bankAccount', 'Bank account no.', { inputMode: 'numeric', maxLength: 24, masked: true })}
-                  {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && input('confirmBankAccount', 'Confirm bank account no.', { inputMode: 'numeric', maxLength: 24, noPaste: true })}
+                  {input('bankAccount', 'Bank account no.', { inputMode: 'numeric', digits: true, masked: true })}
+                  {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && input('confirmBankAccount', 'Confirm bank account no.', { inputMode: 'numeric', digits: true, noPaste: true })}
                   {input('ifscCode', 'IFSC code', { maxLength: 11, placeholder: 'e.g. SBIN0001234', upper: true })}
                 </div>
                 {input('bankName', 'Bank name', { maxLength: 100 })}

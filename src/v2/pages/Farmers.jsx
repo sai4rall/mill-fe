@@ -10,7 +10,7 @@ import {
   createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
-import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded } from '../../shared/utils/farmerValidation'
+import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded, bankAccountInput } from '../../shared/utils/farmerValidation'
 import { phoneInput } from '../../shared/utils/phone'
 import PageHeader from '../components/PageHeader'
 import TableCard from '../components/TableCard'
@@ -250,11 +250,11 @@ export default function Farmers() {
 
             <Divider label="Bank details (optional — all three or none)" labelPosition="left" />
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              <TextInput label="Bank account no." type="password" autoComplete="new-password" inputMode="numeric" maxLength={24} value={form.bankAccount} error={errors.bankAccount}
-                onChange={e => setField('bankAccount', e.target.value)} />
+              <TextInput label="Bank account no." type="password" autoComplete="new-password" inputMode="numeric" value={form.bankAccount} error={errors.bankAccount}
+                onChange={e => setField('bankAccount', bankAccountInput(e.target.value))} />
               {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && (
-                <TextInput label="Confirm bank account no." inputMode="numeric" maxLength={24} autoComplete="off" value={form.confirmBankAccount}
-                  error={errors.confirmBankAccount} onPaste={e => e.preventDefault()} onChange={e => setField('confirmBankAccount', e.target.value)} />
+                <TextInput label="Confirm bank account no." inputMode="numeric" autoComplete="off" value={form.confirmBankAccount}
+                  error={errors.confirmBankAccount} onPaste={e => e.preventDefault()} onChange={e => setField('confirmBankAccount', bankAccountInput(e.target.value))} />
               )}
               <TextInput label="IFSC code" maxLength={11} placeholder="e.g. SBIN0001234" value={form.ifscCode} error={errors.ifscCode}
                 onChange={e => setField('ifscCode', e.target.value.toUpperCase())} />

@@ -359,7 +359,8 @@ describe('Farmer registration — confirm bank account', () => {
   it('shows the confirm field on a new registration and blocks a mismatch', async () => {
     const user = renderPage()
     await openAddDialog(user)
-    expect(field('Confirm Bank Account No.')).toBeInTheDocument()
+    expect(field('Bank Account No.')).toHaveAttribute('type', 'password')       // masked
+    expect(field('Confirm Bank Account No.')).toHaveAttribute('type', 'text')   // typed again in the clear
     await fillValidFarmer(user, { 'Bank Account No.': '' })
     await user.type(field('Bank Account No.'), '123456789012')
     await user.type(field('Confirm Bank Account No.'), '123456789099')

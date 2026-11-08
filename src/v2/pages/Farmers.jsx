@@ -250,7 +250,7 @@ export default function Farmers() {
 
             <Divider label="Bank details (optional — all three or none)" labelPosition="left" />
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              <TextInput label="Bank account no." inputMode="numeric" maxLength={24} value={form.bankAccount} error={errors.bankAccount}
+              <TextInput label="Bank account no." type="password" autoComplete="new-password" inputMode="numeric" maxLength={24} value={form.bankAccount} error={errors.bankAccount}
                 onChange={e => setField('bankAccount', e.target.value)} />
               {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && (
                 <TextInput label="Confirm bank account no." inputMode="numeric" maxLength={24} autoComplete="off" value={form.confirmBankAccount}

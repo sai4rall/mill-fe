@@ -381,8 +381,8 @@ export default function Farmers() {
 
             <fieldset className="space-y-4">
               <legend className="text-xs text-slate-400 mb-2">Bank details (optional — fill all three or leave all empty)</legend>
-              {renderField({ key: 'bankAccount', label: 'Bank Account No.', inputMode: 'numeric', maxLength: 24 })}
-              {(!modal?.id || bankConfirmNeeded(form, modal?.farmer?.bankAccount)) && renderField({ key: 'confirmBankAccount', label: 'Confirm Bank Account No.', inputMode: 'numeric', maxLength: 24, autoComplete: 'off', onPaste: e => e.preventDefault() })}
+              {renderField({ key: 'bankAccount', label: 'Bank Account No.', type: 'password', inputMode: 'numeric', maxLength: 24, autoComplete: 'new-password' })}
+              {(!modal?.id || bankConfirmNeeded(form, modal?.farmer?.bankAccount)) && renderField({ key: 'confirmBankAccount', label: 'Confirm Bank Account No.', type: 'text', inputMode: 'numeric', maxLength: 24, autoComplete: 'off', onPaste: e => e.preventDefault() })}
               {renderField({ key: 'bankName', label: 'Bank Name', maxLength: 100 })}
               {renderField({ key: 'ifscCode', label: 'IFSC Code', upper: true, maxLength: 11, placeholder: 'e.g. SBIN0001234' })}
               <FieldError name="bankDetails" errors={errors} />

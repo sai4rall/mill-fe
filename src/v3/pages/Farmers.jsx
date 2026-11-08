@@ -162,7 +162,8 @@ export default function Farmers() {
     <Field id={`f-${key}`} label={label} required={props.required} error={errors[key]} hint={props.hint}>
       <Input id={`f-${key}`} value={form[key]} aria-invalid={!!errors[key] || undefined} onChange={e => setField(key, props.upper ? e.target.value.toUpperCase() : e.target.value)}
         maxLength={props.maxLength} inputMode={props.inputMode} placeholder={props.placeholder}
-        onPaste={props.noPaste ? (e) => e.preventDefault() : undefined} autoComplete={props.noPaste ? 'off' : undefined} />
+        type={props.masked ? 'password' : 'text'}
+        onPaste={props.noPaste ? (e) => e.preventDefault() : undefined} autoComplete={props.masked ? 'new-password' : props.noPaste ? 'off' : undefined} />
     </Field>
   )
 
@@ -281,7 +282,7 @@ export default function Farmers() {
 
                 <Section>Bank details · all three or none</Section>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {input('bankAccount', 'Bank account no.', { inputMode: 'numeric', maxLength: 24 })}
+                  {input('bankAccount', 'Bank account no.', { inputMode: 'numeric', maxLength: 24, masked: true })}
                   {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && input('confirmBankAccount', 'Confirm bank account no.', { inputMode: 'numeric', maxLength: 24, noPaste: true })}
                   {input('ifscCode', 'IFSC code', { maxLength: 11, placeholder: 'e.g. SBIN0001234', upper: true })}
                 </div>

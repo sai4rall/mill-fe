@@ -145,6 +145,7 @@ describe('v4 Farmers — confirm bank account', () => {
     const u = userEvent.setup()
     renderV4(<Farmers />)
     const panel = await openRegister(u)
-    expect(within(panel).getByLabelText('Confirm bank account no.')).toBeInTheDocument()
+    expect(within(panel).getByLabelText('Bank account no.')).toHaveAttribute('type', 'password')
+    expect(within(panel).getByLabelText('Confirm bank account no.')).not.toHaveAttribute('type', 'password')
   })
 })

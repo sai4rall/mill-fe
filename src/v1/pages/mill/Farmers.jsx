@@ -7,7 +7,7 @@ import {
 import Modal from '../../components/Modal'
 import FarmerAvatar from '../../components/FarmerAvatar'
 import { resizeImage, normalizePhone } from '../../../shared/utils/image'
-import { validateFarmer, bankConfirmNeeded, normalizeFarmer, serverFieldErrors } from '../../../shared/utils/farmerValidation'
+import { validateFarmer, bankConfirmNeeded, bankAccountInput, normalizeFarmer, serverFieldErrors } from '../../../shared/utils/farmerValidation'
 import { phoneInput } from '../../../shared/utils/phone'
 import { PARTY_TYPES, partyTypeLabel } from '../../../shared/utils/partyTypes'
 import { Plus, Pencil, Trash2, User, Camera, BadgeCheck, AlertCircle } from 'lucide-react'
@@ -177,14 +177,14 @@ export default function Farmers() {
   const inputCls = 'w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400'
   const errCls = '!border-red-400 focus:!ring-red-300'
 
-  const renderField = ({ key, label, required, textarea, upper, ...props }) => {
+  const renderField = ({ key, label, required, textarea, upper, digits, ...props }) => {
     const Tag = textarea ? 'textarea' : 'input'
     return (
       <div key={key}>
         <label htmlFor={`farmer-${key}`} className="block text-sm font-medium text-slate-700 mb-1">{label}{required && ' *'}</label>
         <Tag id={`farmer-${key}`} value={form[key]} rows={textarea ? 2 : undefined}
           aria-invalid={!!errors[key]} aria-describedby={errors[key] ? `${key}-error` : undefined}
-          onChange={e => setField(key, upper ? e.target.value.toUpperCase() : e.target.value)}
+          onChange={e => setField(key, digits ? bankAccountInput(e.target.value) : upper ? e.target.value.toUpperCase() : e.target.value)}
           className={`${inputCls} ${errors[key] ? errCls : ''}`} {...props} />
         <FieldError name={key} errors={errors} />
       </div>
@@ -381,8 +381,8 @@ export default function Farmers() {
 
             <fieldset className="space-y-4">
               <legend className="text-xs text-slate-400 mb-2">Bank details (optional — fill all three or leave all empty)</legend>
-              {renderField({ key: 'bankAccount', label: 'Bank Account No.', type: 'password', inputMode: 'numeric', maxLength: 24, autoComplete: 'new-password' })}
-              {(!modal?.id || bankConfirmNeeded(form, modal?.farmer?.bankAccount)) && renderField({ key: 'confirmBankAccount', label: 'Confirm Bank Account No.', type: 'text', inputMode: 'numeric', maxLength: 24, autoComplete: 'off', onPaste: e => e.preventDefault() })}
+              {renderField({ key: 'bankAccount', label: 'Bank Account No.', type: 'password', inputMode: 'numeric', digits: true, autoComplete: 'new-password' })}
+              {(!modal?.id || bankConfirmNeeded(form, modal?.farmer?.bankAccount)) && renderField({ key: 'confirmBankAccount', label: 'Confirm Bank Account No.', type: 'text', inputMode: 'numeric', digits: true, autoComplete: 'off', onPaste: e => e.preventDefault() })}
               {renderField({ key: 'bankName', label: 'Bank Name', maxLength: 100 })}
               {renderField({ key: 'ifscCode', label: 'IFSC Code', upper: true, maxLength: 11, placeholder: 'e.g. SBIN0001234' })}
               <FieldError name="bankDetails" errors={errors} />

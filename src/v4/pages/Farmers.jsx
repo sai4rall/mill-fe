@@ -7,7 +7,7 @@ import {
   createFarmer, deleteFarmer, deleteFarmerPhoto, getFarmers, getPurchases, sendFarmerOtp, updateFarmer, uploadFarmerPhoto, verifyFarmerOtp,
 } from '../../shared/api/mill'
 import { normalizePhone, resizeImage } from '../../shared/utils/image'
-import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded } from '../../shared/utils/farmerValidation'
+import { normalizeFarmer, serverFieldErrors, validateFarmer, bankConfirmNeeded, bankAccountInput } from '../../shared/utils/farmerValidation'
 import { phoneInput } from '../../shared/utils/phone'
 import { EmptyState, ErrorAlert, FarmerAvatar, Loading, PageHeader, Section, StatusChip } from '../kit/display'
 import { TextAreaInput, TextInput } from '../kit/fields'
@@ -362,10 +362,10 @@ export default function Farmers() {
 
             <Section>Bank details · all three or none</Section>
             <div className="grid gap-4 sm:grid-cols-2">
-              <TextInput label="Bank account no." type="password" autoComplete="new-password" inputMode="numeric" maxLength={24} value={form.bankAccount} onChange={v => setField('bankAccount', v)} error={errors.bankAccount} />
+              <TextInput label="Bank account no." type="password" autoComplete="new-password" inputMode="numeric" value={form.bankAccount} onChange={v => setField('bankAccount', bankAccountInput(v))} error={errors.bankAccount} />
               {(!editing?.id || bankConfirmNeeded(form, editing?.farmer?.bankAccount)) && (
-                <TextInput label="Confirm bank account no." inputMode="numeric" maxLength={24} autoComplete="off" value={form.confirmBankAccount}
-                  onPaste={e => e.preventDefault()} onChange={v => setField('confirmBankAccount', v)} error={errors.confirmBankAccount} />
+                <TextInput label="Confirm bank account no." inputMode="numeric" autoComplete="off" value={form.confirmBankAccount}
+                  onPaste={e => e.preventDefault()} onChange={v => setField('confirmBankAccount', bankAccountInput(v))} error={errors.confirmBankAccount} />
               )}
               <TextInput label="IFSC code" maxLength={11} placeholder="e.g. SBIN0001234" value={form.ifscCode} onChange={v => setField('ifscCode', v.toUpperCase())} error={errors.ifscCode} />
             </div>

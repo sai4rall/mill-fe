@@ -79,6 +79,11 @@ export function validateFarmer(form, { requirePhone = true, originalBankAccount 
   return errors
 }
 
+export const BANK_ACCOUNT_MAX = 18
+
+/** What a bank account input keeps: digits only, at most 18 (spaces, letters and symbols are dropped as typed or pasted). */
+export const bankAccountInput = (value) => String(value ?? '').replace(/\D/g, '').slice(0, BANK_ACCOUNT_MAX)
+
 /** True when a bank account number is entered that differs from the saved one, so it must be confirmed. */
 export function bankConfirmNeeded(form, originalBankAccount = '') {
   const account = (form.bankAccount || '').replace(/\s+/g, '')

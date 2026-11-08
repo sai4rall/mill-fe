@@ -53,7 +53,8 @@ async function fillValidFarmer(user, overrides = {}) {
   for (const [label, value] of Object.entries(values)) {
     await user.clear(field(label))
     if (value) await user.type(field(label), value)
-  }
+  }  // A new bank account number has to be typed a second time.
+  if (values['Bank Account No.']) await user.type(field('Confirm Bank Account No.'), values['Bank Account No.'])
 }
 
 async function verifyPhone(user, code = '123456') {
@@ -351,5 +352,20 @@ describe('Farmers list — pagination', () => {
     await user.click(screen.getByRole('button', { name: /Farmers/ }))
     expect(screen.getByText('1–20 of 30')).toBeInTheDocument()
     expect(screen.getByText('Page 1 of 2')).toBeInTheDocument()
+  })
+})
+
+describe('Farmer registration — confirm bank account', () => {
+  it('shows the confirm field on a new registration and blocks a mismatch', async () => {
+    const user = renderPage()
+    await openAddDialog(user)
+    expect(field('Confirm Bank Account No.')).toBeInTheDocument()
+    await fillValidFarmer(user, { 'Bank Account No.': '' })
+    await user.type(field('Bank Account No.'), '123456789012')
+    await user.type(field('Confirm Bank Account No.'), '123456789099')
+    await verifyPhone(user)
+    await user.click(saveButton())
+    expect(await screen.findByText('Bank account numbers do not match')).toBeInTheDocument()
+    expect(api.createFarmer).not.toHaveBeenCalled()
   })
 })

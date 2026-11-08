@@ -67,7 +67,7 @@ describe('v2 Farmers', () => {
     const user = userEvent.setup()
     const dialog = await openRegister(user)
     await user.type(within(dialog).getByLabelText(/Full name/), '  Venkat   Rao ')
-    await user.type(within(dialog).getByLabelText(/Mobile number/), '+91 98765 33333')
+    await user.type(within(dialog).getByLabelText(/Mobile number/), '98765 33333')
     await user.click(within(dialog).getByRole('button', { name: /Send OTP/ }))
     await waitFor(() => expect(api.sendFarmerOtp).toHaveBeenCalledWith('9876533333'))
 
@@ -106,5 +106,19 @@ describe('v2 Farmers', () => {
     await within(dialog).findByText('Mobile number verified')
     await user.click(within(dialog).getByRole('button', { name: 'Save farmer' }))
     expect(await within(dialog).findByText('Server bank rule')).toBeInTheDocument()
+  })
+})
+
+describe('v2 Farmers — phone field', () => {
+  it('holds at most 10 digits and cleans up a pasted +91 number', async () => {
+    const user = userEvent.setup()
+    const dialog = await openRegister(user)
+    const phone = within(dialog).getByLabelText(/Mobile number/)
+    await user.type(phone, '98765432109999')
+    expect(phone).toHaveValue('9876543210')
+    await user.clear(phone)
+    await user.click(phone)
+    await user.paste('+91 91234 56780')
+    expect(phone).toHaveValue('9123456780')
   })
 })

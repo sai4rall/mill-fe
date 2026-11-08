@@ -11,13 +11,11 @@ import ErrorAlert from '../../components/ErrorAlert'
 import PasswordModal from '../../components/PasswordModal'
 import StatusBadge from '../../components/StatusBadge'
 import { errorMessage } from '../../../shared/utils/errors'
+import { MILL_FIELDS, millPayload, validateMill } from '../../../shared/utils/millValidation'
+import { phoneInput } from '../../../shared/utils/phone'
 import { v2 } from '../../lib/paths'
 
 const EMPTY = { name: '', location: '', contactPhone: '', contactEmail: '', adminUsername: '', adminFullName: '' }
-const FIELDS = [
-  ['name', 'Mill name', true], ['location', 'Location'], ['contactPhone', 'Contact phone'], ['contactEmail', 'Contact email'],
-  ['adminUsername', 'Admin username', true], ['adminFullName', 'Admin full name'],
-]
 
 function Chip({ label, value, color }) {
   return (
@@ -33,6 +31,7 @@ export default function Mills() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [form, setForm] = useState(null)
+  const [errs, setErrs] = useState({})
   const [reveal, setReveal] = useState(null)
   const { data: mills = [], isLoading } = useQuery({ queryKey: ['mills'], queryFn: getMills })
   const stocks = useQueries({ queries: mills.map(m => ({ queryKey: ['mill-stock', m.id], queryFn: () => getMillStock(m.id), staleTime: 30000 })) })
@@ -58,7 +57,7 @@ export default function Mills() {
   return (
     <Stack gap="lg">
       <PageHeader title="Mills" description="All rice mills on the platform"
-        actions={<Button leftSection={<Plus size={16} />} onClick={() => { create.reset(); setForm({ ...EMPTY }) }}>Add mill</Button>} />
+        actions={<Button leftSection={<Plus size={16} />} onClick={() => { create.reset(); setErrs({}); setForm({ ...EMPTY }) }}>Add mill</Button>} />
       {isLoading ? <Center py={80}><Loader /></Center> : mills.length === 0 ? (
         <EmptyState icon={Building2} title="No mills yet">Add the first mill; its admin login is created for you.</EmptyState>
       ) : (
@@ -101,11 +100,13 @@ export default function Mills() {
 
       <Modal opened={!!form} onClose={() => setForm(null)} title="Add mill" size="lg">
         {form && (
-          <Stack component="form" gap="md" onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}>
+          <Stack component="form" gap="md" noValidate onSubmit={(e) => { e.preventDefault(); const found = validateMill(form); setErrs(found); if (!Object.keys(found).length) create.mutate(millPayload(form)) }}>
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
-              {FIELDS.map(([key, label, req]) => (
-                <TextInput key={key} label={label} withAsterisk={!!req} required={!!req} value={form[key]}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+              {MILL_FIELDS.map(({ key, label, required, phone, type }) => (
+                <TextInput key={key} label={label} withAsterisk={!!required} type={type} value={form[key]}
+                  error={errs[key] || create.error?.response?.data?.fields?.[key]}
+                  inputMode={phone ? 'numeric' : undefined} placeholder={phone ? '10-digit mobile' : undefined}
+                  onChange={e => { const v = phone ? phoneInput(e.target.value) : e.target.value; setForm(f => ({ ...f, [key]: v })); setErrs(x => ({ ...x, [key]: undefined })) }} />
               ))}
             </SimpleGrid>
             <ErrorAlert error={create.error} />

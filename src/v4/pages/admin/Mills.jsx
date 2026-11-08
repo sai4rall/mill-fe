@@ -11,13 +11,11 @@ import PasswordReveal from '../../kit/PasswordReveal'
 import { errorMessage } from '../../lib/format'
 import { notify } from '../../lib/toast'
 import { num } from '../../lib/numbers'
+import { MILL_FIELDS, millPayload, validateMill } from '../../../shared/utils/millValidation'
+import { phoneInput } from '../../../shared/utils/phone'
 import { v4 } from '../../lib/paths'
 
 const EMPTY = { name: '', location: '', contactPhone: '', contactEmail: '', adminUsername: '', adminFullName: '' }
-const FIELDS = [
-  ['name', 'Mill name', true], ['location', 'Location'], ['contactPhone', 'Contact phone'], ['contactEmail', 'Contact email'],
-  ['adminUsername', 'Admin username', true], ['adminFullName', 'Admin full name'],
-]
 const QTY = { paddy: 'bg-paddy-soft text-paddy', mill: 'bg-surface-secondary text-muted', rice: 'bg-rice-soft text-rice' }
 
 function Qty({ label, value, tone }) {
@@ -28,6 +26,7 @@ export default function Mills() {
   const qc = useQueryClient()
   const navigate = useNavigate()
   const [form, setForm] = useState(null)
+  const [errs, setErrs] = useState({})
   const [reveal, setReveal] = useState(null)
   const { data: mills = [], isLoading } = useQuery({ queryKey: ['mills'], queryFn: getMills })
   const stocks = useQueries({ queries: mills.map(m => ({ queryKey: ['mill-stock', m.id], queryFn: () => getMillStock(m.id), staleTime: 30000 })) })
@@ -43,7 +42,7 @@ export default function Mills() {
   return (
     <>
       <PageHeader title="Mills" description={`${mills.length} rice mills on the platform`}
-        actions={<Button onPress={() => { create.reset(); setForm({ ...EMPTY }) }}><Plus className="size-4" />Add mill</Button>} />
+        actions={<Button onPress={() => { create.reset(); setErrs({}); setForm({ ...EMPTY }) }}><Plus className="size-4" />Add mill</Button>} />
       {isLoading ? <Loading /> : mills.length === 0 ? (
         <EmptyState icon={Building2} title="No mills yet">Add the first mill; its admin login is created for you.</EmptyState>
       ) : (
@@ -81,14 +80,19 @@ export default function Mills() {
       )}
 
       <Panel open={!!form} onClose={() => setForm(null)} title="Add mill" description="The mill admin's password is generated and shown once." width="sm:w-[34rem]"
-        onSubmit={(e) => { e.preventDefault(); create.mutate(form) }}
+        onSubmit={(e) => { e.preventDefault(); const found = validateMill(form); setErrs(found); if (!Object.keys(found).length) create.mutate(millPayload(form)) }}
         footer={<><Button variant="tertiary" onPress={() => setForm(null)}>Cancel</Button><SubmitButton pending={create.isPending}>Create mill</SubmitButton></>}>
         {form && (
           <>
             <div className="grid gap-4 sm:grid-cols-2">
-              {FIELDS.map(([key, label, req]) => <TextInput key={key} label={label} required={!!req} value={form[key]} onChange={v => setForm(f => ({ ...f, [key]: v }))} />)}
+              {MILL_FIELDS.map(({ key, label, required, phone, type }) => (
+                <TextInput key={key} label={label} required={required} type={type} value={form[key]}
+                  error={errs[key] || create.error?.response?.data?.fields?.[key]}
+                  prefix={phone ? '+91' : undefined} inputMode={phone ? 'numeric' : undefined} placeholder={phone ? '10-digit mobile' : undefined}
+                  onChange={v => { setForm(f => ({ ...f, [key]: phone ? phoneInput(v) : v })); setErrs(x => ({ ...x, [key]: undefined })) }} />
+              ))}
             </div>
-            <ErrorAlert error={create.error} />
+            {!create.error?.response?.data?.fields && <ErrorAlert error={create.error} />}
           </>
         )}
       </Panel>

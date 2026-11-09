@@ -20,7 +20,9 @@
   "more": "और",
   "record": "दर्ज करें",
   "allPages": "सभी पेज",
-  "rejected": "अस्वीकृत लॉरी"
+  "rejected": "अस्वीकृत लॉरी",
+  "production": "उत्पादन",
+  "downtime": "मशीन बंद समय"
  },
  "account": {
   "changePassword": "पासवर्ड बदलें",

@@ -5,14 +5,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { completeBatch, createBatch, getBatches } from '../../shared/api/mill'
 import { todayISO } from '../../shared/utils/dates'
 import { EmptyState, ErrorAlert, Loading, PageHeader, StatusChip } from '../kit/display'
-import { DateInput, TextAreaInput, TextInput, enterToNext } from '../kit/fields'
+import { DateInput, SelectInput, TextAreaInput, TextInput, enterToNext } from '../kit/fields'
 import { Panel, SubmitButton } from '../kit/overlays'
 import { cx } from '../lib/format'
 import { date, daysAgo, num, qty } from '../lib/numbers'
 import { notify } from '../lib/toast'
+import { SHIFTS, batchOutputs, currentShift, shiftLabel } from '../../shared/utils/production'
 import { useT } from '../i18n'
 
-const EMPTY = { batchDate: '', paddyInputQuintals: '', expectedRiceQuintals: '', notes: '' }
+const EMPTY = { batchDate: '', shift: '', paddyInputQuintals: '', expectedRiceQuintals: '', notes: '' }
+const DONE = { actualRiceQuintals: '', brokenRiceQuintals: '', branQuintals: '', huskQuintals: '', notes: '' }
+const numOrNull = (v) => (v === '' || v == null ? null : parseFloat(v))
 const opt = (v) => (v == null || v === '' ? '—' : num(v))
 
 function BatchCard({ b, onComplete }) {
@@ -22,7 +25,7 @@ function BatchCard({ b, onComplete }) {
   return (
     <article className="grid gap-3 rounded-card border border-border bg-surface p-4 shadow-e1">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-semibold">#{b.id} · {date(b.batchDate)}</span>
+        <span className="text-sm font-semibold">#{b.id} · {date(b.batchDate)}{b.shift && <span className="font-normal text-muted"> · {shiftLabel(b.shift)}</span>}</span>
         <StatusChip status={b.status} />
       </div>
       <dl className="grid grid-cols-3 gap-2 text-center">
@@ -35,6 +38,10 @@ function BatchCard({ b, onComplete }) {
         <div className="grid gap-1">
           <div className="flex justify-between text-xs"><span className="text-muted">{t('batches.conversion')}</span><span className="v4-num font-semibold">{num(rate)}%</span></div>
           <div className="h-1.5 overflow-hidden rounded-full bg-surface-secondary"><div className="h-full rounded-full bg-rice" style={{ width: `${Math.min(100, rate)}%` }} /></div>
+          {(b.brokenRiceQuintals != null || b.branQuintals != null || b.huskQuintals != null) && (
+            <p className="v4-num text-xs text-muted">Broken {opt(b.brokenRiceQuintals)} · Bran {opt(b.branQuintals)} · Husk {opt(b.huskQuintals)} Qtl</p>
+          )}
+          {b.unaccountedQuintals != null && <p className="text-xs"><span className="text-muted">Unaccounted </span><span className={cx('v4-num font-semibold', Number(b.unaccountedQuintals) > 0 ? 'text-risk' : '')}>{qty(b.unaccountedQuintals)}</span></p>}
         </div>
       ) : (
         <div className="flex items-center justify-between gap-2">
@@ -62,7 +69,7 @@ export default function MillOperations() {
   const [form, setForm] = useState(null)
   const [errs, setErrs] = useState({})
   const [completing, setCompleting] = useState(null)
-  const [done, setDone] = useState({ actualRiceQuintals: '', notes: '' })
+  const [done, setDone] = useState(DONE)
   const [doneErr, setDoneErr] = useState('')
   const { data: batches = [], isLoading } = useQuery({ queryKey: ['batches'], queryFn: getBatches })
   const refresh = () => { qc.invalidateQueries({ queryKey: ['batches'] }); qc.invalidateQueries({ queryKey: ['stock'] }) }
@@ -71,12 +78,13 @@ export default function MillOperations() {
   const complete = useMutation({ mutationFn: ({ id, data }) => completeBatch(id, data), onSuccess: () => { refresh(); setCompleting(null); notify('Batch completed') } })
   const running = batches.filter(b => b.status === 'IN_PROGRESS')
   const finished = batches.filter(b => b.status !== 'IN_PROGRESS')
-  const openStart = () => { create.reset(); setErrs({}); setForm({ ...EMPTY, batchDate: todayISO() }) }
+  const openStart = () => { create.reset(); setErrs({}); setForm({ ...EMPTY, batchDate: todayISO(), shift: currentShift() }) }
 
   const start = (e) => {
     e.preventDefault()
     const found = {}
     if (!form.batchDate) found.batchDate = 'Batch date is required'
+    if (!form.shift) found.shift = 'Shift is required'
     if (!(Number(form.paddyInputQuintals) > 0)) found.paddyInputQuintals = 'Enter the paddy going into the mill'
     setErrs(found)
     if (Object.keys(found).length) return
@@ -85,7 +93,9 @@ export default function MillOperations() {
   const finish = (e) => {
     e.preventDefault()
     if (!(Number(done.actualRiceQuintals) >= 0) || done.actualRiceQuintals === '') { setDoneErr('Enter the rice output'); return }
-    complete.mutate({ id: completing.id, data: { actualRiceQuintals: parseFloat(done.actualRiceQuintals), notes: done.notes } })
+    if (batchOutputs(completing.paddyInputQuintals, done).tooMuch) { setDoneErr('Rice and by-products cannot weigh more than the paddy input'); return }
+    complete.mutate({ id: completing.id, data: { actualRiceQuintals: parseFloat(done.actualRiceQuintals), brokenRiceQuintals: numOrNull(done.brokenRiceQuintals),
+      branQuintals: numOrNull(done.branQuintals), huskQuintals: numOrNull(done.huskQuintals), notes: done.notes } })
   }
 
   return (
@@ -97,7 +107,7 @@ export default function MillOperations() {
         : (
           <div className="grid gap-4 lg:grid-cols-2">
             <Column title={t('batches.inProgress')} count={running.length} tone="bg-paddy">
-              {running.map(b => <BatchCard key={b.id} b={b} onComplete={() => { complete.reset(); setDoneErr(''); setCompleting(b); setDone({ actualRiceQuintals: '', notes: '' }) }} />)}
+              {running.map(b => <BatchCard key={b.id} b={b} onComplete={() => { complete.reset(); setDoneErr(''); setCompleting(b); setDone(DONE) }} />)}
               {running.length === 0 && <p className="py-6 text-center text-sm text-muted">Nothing in the mill right now.</p>}
             </Column>
             <Column title={t('batches.completed')} count={finished.length} tone="bg-rice">
@@ -111,7 +121,13 @@ export default function MillOperations() {
         footer={<><Button variant="tertiary" onPress={() => setForm(null)}>Cancel</Button><SubmitButton pending={create.isPending}>{t('batches.start')}</SubmitButton></>}>
         {form && (
           <div className="grid gap-4" onKeyDown={enterToNext}>
-            <DateInput label="Batch date" required value={form.batchDate} error={errs.batchDate} onChange={v => setForm(f => ({ ...f, batchDate: v }))} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <DateInput label="Batch date" required value={form.batchDate} error={errs.batchDate} onChange={v => setForm(f => ({ ...f, batchDate: v }))} />
+              <div className="grid gap-1">
+                <SelectInput label="Shift" options={SHIFTS.map(s => ({ value: s.value, label: `${s.label} (${s.hours})` }))} value={form.shift} onChange={v => { setErrs(x => ({ ...x, shift: undefined })); setForm(f => ({ ...f, shift: v })) }} />
+                {errs.shift && <p className="text-xs text-danger" role="alert">{errs.shift}</p>}
+              </div>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <TextInput label={t('batches.paddyIn')} unit="Qtl" required inputMode="decimal" value={form.paddyInputQuintals} error={errs.paddyInputQuintals} onChange={v => setForm(f => ({ ...f, paddyInputQuintals: v }))} />
               <TextInput label={t('batches.expected')} unit="Qtl" inputMode="decimal" value={form.expectedRiceQuintals} onChange={v => setForm(f => ({ ...f, expectedRiceQuintals: v }))} />
@@ -127,8 +143,22 @@ export default function MillOperations() {
         footer={<><Button variant="tertiary" onPress={() => setCompleting(null)}>Cancel</Button><SubmitButton pending={complete.isPending}>Mark complete</SubmitButton></>}>
         {completing && (
           <div className="grid gap-4">
-            <TextInput label={t('batches.riceOut')} unit="Qtl" required inputMode="decimal" value={done.actualRiceQuintals} error={doneErr} onChange={v => { setDoneErr(''); setDone(d => ({ ...d, actualRiceQuintals: v })) }}
-              hint={Number(done.actualRiceQuintals) > 0 ? `${t('batches.conversion')}: ${num((Number(done.actualRiceQuintals) / Number(completing.paddyInputQuintals)) * 100)}%` : undefined} />
+            <TextInput label={t('batches.riceOut')} unit="Qtl" required inputMode="decimal" value={done.actualRiceQuintals} error={doneErr} onChange={v => { setDoneErr(''); setDone(d => ({ ...d, actualRiceQuintals: v })) }} />
+            <p className="text-sm font-medium">By-products <span className="font-normal text-muted">(optional, for loss tracking)</span></p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <TextInput label="Broken rice" unit="Qtl" inputMode="decimal" value={done.brokenRiceQuintals} onChange={v => { setDoneErr(''); setDone(d => ({ ...d, brokenRiceQuintals: v })) }} />
+              <TextInput label="Bran" unit="Qtl" inputMode="decimal" value={done.branQuintals} onChange={v => { setDoneErr(''); setDone(d => ({ ...d, branQuintals: v })) }} />
+              <TextInput label="Husk" unit="Qtl" inputMode="decimal" value={done.huskQuintals} onChange={v => { setDoneErr(''); setDone(d => ({ ...d, huskQuintals: v })) }} />
+            </div>
+            {done.actualRiceQuintals !== '' && (() => {
+              const o = batchOutputs(completing.paddyInputQuintals, done)
+              return (
+                <dl className="grid gap-1 rounded-card border border-border bg-canvas p-3 text-sm" data-testid="batch-preview">
+                  <div className="flex justify-between"><dt>{t('batches.conversion')} (recovery)</dt><dd className="v4-num font-semibold">{num(o.recoveryPct)}%</dd></div>
+                  <div className="flex justify-between"><dt>Unaccounted loss</dt><dd className={cx('v4-num font-semibold', o.tooMuch ? 'text-danger' : o.unaccounted > 0 ? 'text-risk' : '')}>{qty(o.unaccounted)}</dd></div>
+                </dl>
+              )
+            })()}
             <TextAreaInput label="Notes" value={done.notes} onChange={v => setDone(d => ({ ...d, notes: v }))} />
             <ErrorAlert error={complete.error} />
           </div>

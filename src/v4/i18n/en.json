@@ -20,7 +20,9 @@
   "more": "More",
   "record": "Record",
   "allPages": "All pages",
-  "rejected": "Rejected lorries"
+  "rejected": "Rejected lorries",
+  "production": "Production",
+  "downtime": "Downtime"
  },
  "account": {
   "changePassword": "Change password",

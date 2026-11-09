@@ -11,7 +11,7 @@ vi.mock('../../shared/api/features', () => ({ getFeatures: vi.fn() }))
 vi.mock('./MillBrand', () => ({ default: () => <div>brand</div> }))
 
 const ALL_KEYS = ['dashboard', 'farmers', 'purchases', 'mill_operations', 'export_orders', 'shipments', 'truck_tracking', 'stock_report', 'operators', 'moisture_deduction']
-const ALL_LABELS = ['Dashboard', 'Farmers', 'Purchases', 'Rejected Lorries', 'Mill Operations', 'Export Orders', 'Shipments', 'Truck Tracking', 'Stock Report', 'Moisture Deductions', 'Operators']
+const ALL_LABELS = ['Dashboard', 'Farmers', 'Purchases', 'Rejected Lorries', 'Mill Operations', 'Production', 'Machine Downtime', 'Export Orders', 'Shipments', 'Truck Tracking', 'Stock Report', 'Moisture Deductions', 'Operators']
 const flags = (overrides = {}) =>
   ALL_KEYS.map(key => ({ key, name: key, showInMenu: true, enabled: true, ...overrides[key] }))
 
@@ -96,7 +96,7 @@ describe('Layout menu feature flags', () => {
     renderWithProviders(<Layout><p>page</p></Layout>)
     const nav = await screen.findByRole('navigation')
     await within(nav).findByText('Moisture Deductions')
-    expect(menuLabels(nav)).toEqual(['Mills', 'Moisture Deductions'])
+    expect(menuLabels(nav)).toEqual(['Mills', 'Production', 'Moisture Deductions'])
   })
 
   it('hides the super admin moisture screen when moisture is switched off globally', async () => {
@@ -105,7 +105,7 @@ describe('Layout menu feature flags', () => {
     renderWithProviders(<Layout><p>page</p></Layout>)
     const nav = await screen.findByRole('navigation')
     await waitFor(() => expect(getFeatures).toHaveBeenCalled())
-    await waitFor(() => expect(menuLabels(nav)).toEqual(['Mills']))
+    await waitFor(() => expect(menuLabels(nav)).toEqual(['Mills', 'Production']))
   })
 
   it('shows only the Dev Console for the dev admin, without loading mill flags', async () => {

@@ -69,3 +69,10 @@ export const getRejectedLorries = () => api.get('/rejected-lorries').then(r => r
 export const createRejectedLorry = (data) => api.post('/rejected-lorries', data).then(r => r.data)
 export const updateRejectedLorry = (id, data) => api.put(`/rejected-lorries/${id}`, data).then(r => r.data)
 export const deleteRejectedLorry = (id) => api.delete(`/rejected-lorries/${id}`)
+
+// Production monitoring (daily output, recovery, losses, shifts) and machine downtime.
+export const getProduction = (from, to) => api.get('/production', { params: { from, to } }).then(r => r.data)
+export const getDowntime = () => api.get('/downtime').then(r => r.data)
+export const createDowntime = (data) => api.post('/downtime', data).then(r => r.data)
+export const updateDowntime = (id, data) => api.put(`/downtime/${id}`, data).then(r => r.data)
+export const deleteDowntime = (id) => api.delete(`/downtime/${id}`)

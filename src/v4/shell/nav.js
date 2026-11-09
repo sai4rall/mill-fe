@@ -1,5 +1,5 @@
 import {
-  Ban, BarChart3, Building2, Droplets, Factory, IndianRupee, LayoutDashboard, MapPin, Package, Settings, ShoppingCart, Sprout,
+  Activity, Ban, BarChart3, Building2, Clock, Droplets, Factory, IndianRupee, LayoutDashboard, MapPin, Package, Settings, ShoppingCart, Sprout,
   Terminal, Truck, UserCog, Users, Wheat,
 } from 'lucide-react'
 import { v4 } from '../lib/paths'
@@ -16,6 +16,8 @@ export const MILL_NAV = [
   ] },
   { group: 'milling', label: 'nav.milling', icon: Factory, items: [
     { to: v4('/batches'), label: 'nav.batches', icon: Factory, feature: 'mill_operations' },
+    { to: v4('/production'), label: 'nav.production', icon: Activity, feature: 'mill_operations' },
+    { to: v4('/downtime'), label: 'nav.downtime', icon: Clock, feature: 'mill_operations' },
     { to: v4('/stock'), label: 'nav.stock', icon: BarChart3, feature: 'stock_report' },
   ] },
   { group: 'sales', label: 'nav.sales', icon: Package, items: [
@@ -30,7 +32,10 @@ export const MILL_NAV = [
 ]
 
 export const ADMIN_NAV = [
-  { group: 'mills', label: 'nav.mills', icon: Building2, items: [{ to: v4('/admin'), label: 'nav.mills', icon: Building2, end: true }] },
+  { group: 'mills', label: 'nav.mills', icon: Building2, items: [
+    { to: v4('/admin'), label: 'nav.mills', icon: Building2, end: true },
+    { to: v4('/admin/production'), label: 'nav.production', icon: Activity },
+  ] },
   { group: 'settings', label: 'nav.settings', icon: Settings, items: [{ to: v4('/admin/moisture'), label: 'nav.moisture', icon: Droplets, feature: 'moisture_deduction' }] },
 ]
 

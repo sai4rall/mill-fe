@@ -9,6 +9,9 @@ import { homePathFor } from '../shared/utils/roles'
 
 // Pages load on demand, so the first screen does not download every page and the PDF/Excel export libraries.
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const ProductionComparison = lazy(() => import('./pages/admin/ProductionComparison'))
+const Production = lazy(() => import('./pages/mill/Production'))
+const Downtime = lazy(() => import('./pages/mill/Downtime'))
 const MillStockStatement = lazy(() => import('./pages/admin/MillStockStatement'))
 const Dashboard = lazy(() => import('./pages/mill/Dashboard'))
 const Farmers = lazy(() => import('./pages/mill/Farmers'))
@@ -54,6 +57,16 @@ export default function V1App() {
                 <Layout><FeatureGate feature="moisture_deduction" name="Moisture Deduction"><GlobalMoisture /></FeatureGate></Layout>
               </PrivateRoute>
             } />
+            <Route path="/admin/production" element={
+              <PrivateRoute roles={['SUPER_ADMIN']}>
+                <Layout><ProductionComparison /></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/admin/mills/:id/production" element={
+              <PrivateRoute roles={['SUPER_ADMIN']}>
+                <Layout><Production /></Layout>
+              </PrivateRoute>
+            } />
             <Route path="/admin/mills/:id/stock" element={
               <PrivateRoute roles={['SUPER_ADMIN']}>
                 <Layout><MillStockStatement /></Layout>
@@ -83,6 +96,16 @@ export default function V1App() {
             <Route path="/mill-ops" element={
               <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
                 <Layout><FeatureGate feature="mill_operations" name="Mill Operations"><MillOperations /></FeatureGate></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/production" element={
+              <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
+                <Layout><FeatureGate feature="mill_operations" name="Production"><Production /></FeatureGate></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/downtime" element={
+              <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
+                <Layout><FeatureGate feature="mill_operations" name="Machine Downtime"><Downtime /></FeatureGate></Layout>
               </PrivateRoute>
             } />
             <Route path="/orders" element={

@@ -4,7 +4,7 @@ import { useAuth } from '../../shared/context/AuthContext'
 import { useFeatures } from '../../shared/features/useFeatures'
 import {
   LayoutDashboard, Users, ShoppingCart, Factory,
-  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets, Menu, X, Sparkles, KeyRound, Ban
+  Package, Truck, BarChart3, LogOut, Settings, Building2, MapPin, Wrench, Droplets, Menu, X, Sparkles, KeyRound, Ban, Activity, Clock
 } from 'lucide-react'
 import MillBrand from './MillBrand'
 import ChangePasswordModal from './ChangePasswordModal'
@@ -16,6 +16,8 @@ const millNav = [
   { to: '/purchases', label: 'Purchases', icon: ShoppingCart, feature: 'purchases' },
   { to: '/rejected-lorries', label: 'Rejected Lorries', icon: Ban, feature: 'purchases' },
   { to: '/mill-ops', label: 'Mill Operations', icon: Factory, feature: 'mill_operations' },
+  { to: '/production', label: 'Production', icon: Activity, feature: 'mill_operations' },
+  { to: '/downtime', label: 'Machine Downtime', icon: Clock, feature: 'mill_operations' },
   { to: '/orders', label: 'Export Orders', icon: Package, feature: 'export_orders' },
   { to: '/shipments', label: 'Shipments', icon: Truck, feature: 'shipments' },
   { to: '/truck-tracking', label: 'Truck Tracking', icon: MapPin, adminOnly: true, feature: 'truck_tracking' },
@@ -26,6 +28,7 @@ const millNav = [
 
 const adminNav = [
   { to: '/admin', label: 'Mills', icon: Building2, end: true },
+  { to: '/admin/production', label: 'Production', icon: Activity },
   // Super admin sees global flags, so this follows the global moisture_deduction setting.
   { to: '/admin/moisture', label: 'Moisture Deductions', icon: Droplets, feature: 'moisture_deduction' },
 ]

@@ -21,3 +21,9 @@ export const getMillStockExcelUrl = (millId, millName, fromDate, toDate) => {
   if (toDate) params.append('toDate', toDate)
   return `${API_BASE}/stock/statement/export/excel?${params.toString()}`
 }
+
+// Super admin: production of each mill of my company for a period.
+export const getProductionComparison = (from, to) => api.get('/admin/production', { params: { from, to } }).then(r => r.data)
+// Super admin: one of my mills' production report.
+export const getMillProduction = (millId, from, to) =>
+  api.get('/production', { headers: { 'X-Mill-Id': millId }, params: { from, to } }).then(r => r.data)

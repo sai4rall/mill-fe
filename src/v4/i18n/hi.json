@@ -22,7 +22,9 @@
   "allPages": "सभी पेज",
   "rejected": "अस्वीकृत लॉरी",
   "production": "उत्पादन",
-  "downtime": "मशीन बंद समय"
+  "downtime": "मशीन बंद समय",
+  "quality": "गुणवत्ता नियंत्रण",
+  "qualityStandards": "गुणवत्ता मानक"
  },
  "account": {
   "changePassword": "पासवर्ड बदलें",

@@ -1,6 +1,6 @@
 import {
-  Activity, Ban, BarChart3, Building2, Clock, Droplets, Factory, IndianRupee, LayoutDashboard, MapPin, Package, Settings, ShoppingCart, Sprout,
-  Terminal, Truck, UserCog, Users, Wheat,
+  Activity, Ban, BarChart3, Building2, Clock, Droplets, Factory, FlaskConical, IndianRupee, LayoutDashboard, MapPin, Package, Settings, ShoppingCart, Sprout,
+  ShieldCheck, Terminal, Truck, UserCog, Users, Wheat,
 } from 'lucide-react'
 import { v4 } from '../lib/paths'
 
@@ -18,6 +18,7 @@ export const MILL_NAV = [
     { to: v4('/batches'), label: 'nav.batches', icon: Factory, feature: 'mill_operations' },
     { to: v4('/production'), label: 'nav.production', icon: Activity, feature: 'mill_operations' },
     { to: v4('/downtime'), label: 'nav.downtime', icon: Clock, feature: 'mill_operations' },
+    { to: v4('/quality'), label: 'nav.quality', icon: FlaskConical, feature: 'quality_control' },
     { to: v4('/stock'), label: 'nav.stock', icon: BarChart3, feature: 'stock_report' },
   ] },
   { group: 'sales', label: 'nav.sales', icon: Package, items: [
@@ -36,7 +37,10 @@ export const ADMIN_NAV = [
     { to: v4('/admin'), label: 'nav.mills', icon: Building2, end: true },
     { to: v4('/admin/production'), label: 'nav.production', icon: Activity },
   ] },
-  { group: 'settings', label: 'nav.settings', icon: Settings, items: [{ to: v4('/admin/moisture'), label: 'nav.moisture', icon: Droplets, feature: 'moisture_deduction' }] },
+  { group: 'settings', label: 'nav.settings', icon: Settings, items: [
+    { to: v4('/admin/moisture'), label: 'nav.moisture', icon: Droplets, feature: 'moisture_deduction' },
+    { to: v4('/admin/quality-standards'), label: 'nav.qualityStandards', icon: ShieldCheck, feature: 'quality_control' },
+  ] },
 ]
 
 export const DEV_NAV = [{ group: 'dev', label: 'nav.devConsole', icon: Terminal, items: [{ to: v4('/dev'), label: 'nav.devConsole', icon: Terminal }] }]

@@ -30,7 +30,7 @@ describe('v4 grouped navigation', () => {
     expect(phoneTabs({ role: 'MILL_ADMIN' }, groups('MILL_ADMIN')).tabs.map(t => t.to)).toEqual(['/v4/today', '/v4/purchases', '/v4/batches', '/v4/money'])
   })
   it('keeps super admin and dev menus', () => {
-    expect(pages(groups('SUPER_ADMIN'))).toEqual(['/v4/admin', '/v4/admin/production', '/v4/admin/moisture'])
+    expect(pages(groups('SUPER_ADMIN'))).toEqual(['/v4/admin', '/v4/admin/production', '/v4/admin/moisture', '/v4/admin/quality-standards'])
     expect(pages(groups('DEV_ADMIN'))).toEqual(['/v4/dev'])
   })
 })

@@ -22,7 +22,9 @@
   "allPages": "అన్ని పేజీలు",
   "rejected": "తిరస్కరించిన లారీలు",
   "production": "ఉత్పత్తి",
-  "downtime": "యంత్రాల నిలుపుదల"
+  "downtime": "యంత్రాల నిలుపుదల",
+  "quality": "నాణ్యత నియంత్రణ",
+  "qualityStandards": "నాణ్యత ప్రమాణాలు"
  },
  "account": {
   "changePassword": "పాస్‌వర్డ్ మార్చండి",

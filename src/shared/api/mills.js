@@ -27,3 +27,8 @@ export const getProductionComparison = (from, to) => api.get('/admin/production'
 // Super admin: one of my mills' production report.
 export const getMillProduction = (millId, from, to) =>
   api.get('/production', { headers: { 'X-Mill-Id': millId }, params: { from, to } }).then(r => r.data)
+
+// Company quality standards (grade limits A+ … C per product), applied to all of the super admin's mills.
+export const getCompanyQualityStandards = () => api.get('/admin/quality-standards').then(r => r.data)
+export const saveCompanyQualityStandard = (product, data) => api.put(`/admin/quality-standards/${product}`, data).then(r => r.data)
+export const resetCompanyQualityStandard = (product) => api.delete(`/admin/quality-standards/${product}`).then(r => r.data)

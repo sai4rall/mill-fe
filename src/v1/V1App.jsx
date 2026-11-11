@@ -12,6 +12,8 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const ProductionComparison = lazy(() => import('./pages/admin/ProductionComparison'))
 const Production = lazy(() => import('./pages/mill/Production'))
 const Downtime = lazy(() => import('./pages/mill/Downtime'))
+const Quality = lazy(() => import('./pages/mill/Quality'))
+const QualityStandards = lazy(() => import('./pages/admin/QualityStandards'))
 const MillStockStatement = lazy(() => import('./pages/admin/MillStockStatement'))
 const Dashboard = lazy(() => import('./pages/mill/Dashboard'))
 const Farmers = lazy(() => import('./pages/mill/Farmers'))
@@ -106,6 +108,16 @@ export default function V1App() {
             <Route path="/downtime" element={
               <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
                 <Layout><FeatureGate feature="mill_operations" name="Machine Downtime"><Downtime /></FeatureGate></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/quality" element={
+              <PrivateRoute roles={['MILL_ADMIN', 'MILL_OPERATOR']}>
+                <Layout><FeatureGate feature="quality_control" name="Quality Control"><Quality /></FeatureGate></Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/admin/quality-standards" element={
+              <PrivateRoute roles={['SUPER_ADMIN']}>
+                <Layout><FeatureGate feature="quality_control" name="Quality Standards"><QualityStandards /></FeatureGate></Layout>
               </PrivateRoute>
             } />
             <Route path="/orders" element={

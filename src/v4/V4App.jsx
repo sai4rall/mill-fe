@@ -21,6 +21,8 @@ const Money = lazy(CHUNKS.money)
 const RejectedLorries = lazy(CHUNKS.rejected)
 const Production = lazy(CHUNKS.production)
 const Downtime = lazy(CHUNKS.downtime)
+const Quality = lazy(CHUNKS.quality)
+const QualityStandards = lazy(CHUNKS.qualityStandards)
 const ProductionComparison = lazy(CHUNKS.productionComparison)
 const MillOperations = lazy(CHUNKS.batches)
 const ExportOrders = lazy(CHUNKS.orders)
@@ -89,6 +91,7 @@ export default function V4App() {
           <Route path="batches" element={<Guard roles={MILL} feature="mill_operations" name="Batches"><MillOperations /></Guard>} />
           <Route path="production" element={<Guard roles={MILL} feature="mill_operations" name="Production"><Production /></Guard>} />
           <Route path="downtime" element={<Guard roles={MILL} feature="mill_operations" name="Machine downtime"><Downtime /></Guard>} />
+          <Route path="quality" element={<Guard roles={MILL} feature="quality_control" name="Quality control"><Quality /></Guard>} />
           <Route path="mill-ops" element={<Navigate to={v4('/batches')} replace />} />
           <Route path="orders" element={<Guard roles={MILL} feature="export_orders" name="Export Orders"><ExportOrders /></Guard>} />
           <Route path="shipments" element={<Guard roles={MILL} feature="shipments" name="Shipments"><Shipments /></Guard>} />
@@ -100,6 +103,7 @@ export default function V4App() {
           <Route path="admin/production" element={<Guard roles={SUPER}><ProductionComparison /></Guard>} />
           <Route path="admin/mills/:id/production" element={<Guard roles={SUPER}><Production /></Guard>} />
           <Route path="admin/mills/:id/stock" element={<Guard roles={SUPER}><MillStock /></Guard>} />
+          <Route path="admin/quality-standards" element={<Guard roles={SUPER} feature="quality_control" name="Quality standards"><QualityStandards /></Guard>} />
           <Route path="admin/moisture" element={<Guard roles={SUPER} feature="moisture_deduction" name="Moisture Deduction"><GlobalMoisture /></Guard>} />
           <Route path="dev" element={<Guard roles={DEV}><DevConsole /></Guard>} />
           <Route path="*" element={<Home />} />

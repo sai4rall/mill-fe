@@ -76,3 +76,13 @@ export const getDowntime = () => api.get('/downtime').then(r => r.data)
 export const createDowntime = (data) => api.post('/downtime', data).then(r => r.data)
 export const updateDowntime = (id, data) => api.put(`/downtime/${id}`, data).then(r => r.data)
 export const deleteDowntime = (id) => api.delete(`/downtime/${id}`)
+
+// Quality control & laboratory: lab tests graded A+ … C (or failed), batch-wise history and certificates.
+// Standards are read-only here; the super admin sets them (see api/mills.js).
+export const getQualityStandards = () => api.get('/quality/standards').then(r => r.data)
+export const getQualityTests = (params) => api.get('/quality/tests', { params }).then(r => r.data)
+export const createQualityTest = (data) => api.post('/quality/tests', data).then(r => r.data)
+export const updateQualityTest = (id, data) => api.put(`/quality/tests/${id}`, data).then(r => r.data)
+export const deleteQualityTest = (id) => api.delete(`/quality/tests/${id}`)
+export const issueQualityCertificate = (id) => api.post(`/quality/tests/${id}/certificate`).then(r => r.data)
+export const getBatchQuality = () => api.get('/quality/batches').then(r => r.data)

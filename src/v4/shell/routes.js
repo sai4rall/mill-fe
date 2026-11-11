@@ -10,6 +10,8 @@ export const CHUNKS = {
   rejected: () => import('../pages/RejectedLorries'),
   production: () => import('../pages/Production'),
   downtime: () => import('../pages/Downtime'),
+  quality: () => import('../pages/Quality'),
+  qualityStandards: () => import('../pages/admin/QualityStandards'),
   productionComparison: () => import('../pages/admin/ProductionComparison'),
   batches: () => import('../pages/MillOperations'),
   orders: () => import('../pages/ExportOrders'),
@@ -25,7 +27,7 @@ export const CHUNKS = {
 }
 
 const BY_PATH = {
-  [v4('/today')]: 'today', [v4('/farmers')]: 'farmers', [v4('/purchases')]: 'purchases', [v4('/money')]: 'money', [v4('/rejected-lorries')]: 'rejected', [v4('/production')]: 'production', [v4('/downtime')]: 'downtime', [v4('/admin/production')]: 'productionComparison',
+  [v4('/today')]: 'today', [v4('/farmers')]: 'farmers', [v4('/purchases')]: 'purchases', [v4('/money')]: 'money', [v4('/rejected-lorries')]: 'rejected', [v4('/production')]: 'production', [v4('/downtime')]: 'downtime', [v4('/quality')]: 'quality', [v4('/admin/quality-standards')]: 'qualityStandards', [v4('/admin/production')]: 'productionComparison',
   [v4('/batches')]: 'batches', [v4('/orders')]: 'orders', [v4('/truck-tracking')]: 'truckTracking', [v4('/stock')]: 'stock',
   [v4('/shipments')]: 'shipments', [v4('/moisture')]: 'moisture', [v4('/operators')]: 'operators', [v4('/admin')]: 'mills',
   [v4('/admin/moisture')]: 'globalMoisture', [v4('/dev')]: 'dev',

@@ -22,7 +22,9 @@
   "allPages": "All pages",
   "rejected": "Rejected lorries",
   "production": "Production",
-  "downtime": "Downtime"
+  "downtime": "Downtime",
+  "quality": "Quality control",
+  "qualityStandards": "Quality standards"
  },
  "account": {
   "changePassword": "Change password",
